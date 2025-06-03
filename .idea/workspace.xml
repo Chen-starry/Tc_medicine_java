@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a48d3a27-55a7-4f08-a91c-542013c24a96" name="更改" comment="not vergin" />
+    <list default="true" id="a48d3a27-55a7-4f08-a91c-542013c24a96" name="更改" comment="not vergin">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/sql/email_verification_migration.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/sql/init.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/sql/user_dashboard_tables.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/xlxw.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sql/xlxw.sql" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -79,7 +85,7 @@
       <updated>1748791277162</updated>
       <workItem from="1748791278279" duration="8334000" />
       <workItem from="1748802586712" duration="16913000" />
-      <workItem from="1748919885938" duration="747000" />
+      <workItem from="1748919885938" duration="2565000" />
     </task>
     <task id="LOCAL-00001" summary="not vergin">
       <option name="closed" value="true" />
