@@ -213,8 +213,7 @@ tc-medicine-java/
 │   │   ├── user-dashboard.html      # 用户后台
 │   │   └── style.css                # 样式文件
 │   ├── sql/                         # SQL脚本
-│   │   ├── init.sql                 # 初始化脚本
-│   │   └── user_dashboard_tables.sql # 用户后台表结构
+│   │   ├── xlxw.sql                 # 初始化脚本
 │   ├── mapper/                      # MyBatis映射文件
 │   └── application.yml              # 配置文件
 └── pom.xml                          # Maven配置
