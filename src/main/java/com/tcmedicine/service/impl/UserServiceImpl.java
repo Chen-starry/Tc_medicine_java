@@ -126,4 +126,38 @@ public class UserServiceImpl implements UserService {
         return userMapper.getAllUsersForAdmin();
     }
 
+    @Override
+    public User getUserById(Integer id) {
+        try {
+            return userMapper.selectById(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("根据ID查询用户失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public boolean updateUser(User user) {
+        try {
+            // 如果密码不为空，需要加密
+            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+                user.setPassword(MD5Util.encrypt(user.getPassword()));
+            }
+            return userMapper.updateById(user) > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("更新用户失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public boolean deleteUser(Integer id) {
+        try {
+            return userMapper.deleteById(id) > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("删除用户失败: " + e.getMessage());
+        }
+    }
+
 } 

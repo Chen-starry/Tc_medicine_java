@@ -774,37 +774,45 @@
         function editMedicine(id) {
             fetch(`/api/admin/medicines/${id}`)
                 .then(res => res.json())
-                .then(medicine => {
+                .then(response => {
+                    console.log('获取药材详情:', response); // 调试输出
+                    const medicine = response.data || response; // 兼容新旧格式
                     document.getElementById('medicine-modal-title').textContent = '编辑药材';
-                    document.getElementById('medicine-id').value = medicine.id;
-                    document.getElementById('medicine-name').value = medicine.medicine_name || medicine.name;
-                    document.getElementById('medicine-source').value = medicine.source;
-                    document.getElementById('medicine-properties').value = medicine.properties;
-                    document.getElementById('medicine-taste').value = medicine.taste;
-                    document.getElementById('medicine-channels').value = medicine.channels;
-                    document.getElementById('medicine-effects').value = medicine.effects;
-                    document.getElementById('medicine-contraindications').value = medicine.contraindications;
+                    // 修复字段映射 - 使用数据库实际返回的字段名
+                    document.getElementById('medicine-id').value = medicine.medicine_id || medicine.medicineId || medicine.id;
+                    document.getElementById('medicine-name').value = medicine.medicine_name || medicine.medicineName || medicine.name;
+                    document.getElementById('medicine-source').value = medicine.source || '';
+                    document.getElementById('medicine-properties').value = medicine.properties || '';
+                    document.getElementById('medicine-taste').value = medicine.taste || '';
+                    document.getElementById('medicine-channels').value = medicine.channels || '';
+                    document.getElementById('medicine-effects').value = medicine.effects || '';
+                    document.getElementById('medicine-contraindications').value = medicine.contraindications || '';
 
                     // 显示图片预览
                     const preview = document.getElementById('image-preview');
                     preview.innerHTML = '';
-                    if (medicine.image_path) {
+                    if (medicine.image_path || medicine.imagePath) {
                         const img = document.createElement('img');
-                        img.src = medicine.image_path;
+                        img.src = medicine.image_path || medicine.imagePath;
                         preview.appendChild(img);
                     }
 
                     // 加载分类选项并设置当前值
                     fetch('/api/admin/medicine-categories')
                         .then(res => res.json())
-                        .then(categories => {
+                        .then(response => {
+                            const categories = response.data || response; // 兼容新旧格式
                             const select = document.getElementById('medicine-category');
                             select.innerHTML = categories.map(cat =>
-                                `<option value="${cat.id}" ${cat.id == medicine.category_id ? 'selected' : ''}>${cat.name}</option>`
+                                `<option value="${cat.id}" ${cat.id == (medicine.category_id || medicine.categoryId) ? 'selected' : ''}>${cat.name}</option>`
                             ).join('');
                         });
 
                     document.getElementById('medicine-modal').style.display = 'flex';
+                })
+                .catch(error => {
+                    console.error('获取药材详情失败:', error);
+                    alert('无法加载药材信息');
                 });
         }
 
@@ -812,25 +820,32 @@
         function editDisease(id) {
             fetch(`/api/admin/diseases/${id}`)
                 .then(res => res.json())
-                .then(disease => {
+                .then(response => {
+                    console.log('获取疾病详情:', response); // 调试输出
+                    const disease = response.data || response; // 兼容新旧格式
                     document.getElementById('disease-modal-title').textContent = '编辑疾病';
-                    document.getElementById('disease-id').value = disease.id;
-                    document.getElementById('disease-name').value = disease.name;
-                    document.getElementById('disease-etiology').value = disease.etiology;
-                    document.getElementById('disease-symptoms').value = disease.symptoms;
-                    document.getElementById('disease-treatment').value = disease.treatment;
+                    document.getElementById('disease-id').value = disease.id || '';
+                    document.getElementById('disease-name').value = disease.name || '';
+                    document.getElementById('disease-etiology').value = disease.etiology || '';
+                    document.getElementById('disease-symptoms').value = disease.symptoms || '';
+                    document.getElementById('disease-treatment').value = disease.treatment || '';
 
                     // 加载分类选项并设置当前值
                     fetch('/api/admin/disease-categories')
                         .then(res => res.json())
-                        .then(categories => {
+                        .then(response => {
+                            const categories = response.data || response; // 兼容新旧格式
                             const select = document.getElementById('disease-category');
                             select.innerHTML = categories.map(cat =>
-                                `<option value="${cat.id}" ${cat.id == disease.category_id ? 'selected' : ''}>${cat.name}</option>`
+                                `<option value="${cat.id}" ${cat.id == (disease.category_id || disease.categoryId) ? 'selected' : ''}>${cat.name}</option>`
                             ).join('');
                         });
 
                     document.getElementById('disease-modal').style.display = 'flex';
+                })
+                .catch(error => {
+                    console.error('获取疾病详情失败:', error);
+                    alert('无法加载疾病信息');
                 });
         }
 
@@ -838,14 +853,21 @@
         function editUser(id) {
             fetch(`/api/admin/users/${id}`)
                 .then(res => res.json())
-                .then(user => {
+                .then(response => {
+                    console.log('获取用户详情:', response); // 调试输出
+                    const user = response.data || response; // 兼容新旧格式
                     document.getElementById('user-modal-title').textContent = '编辑用户';
-                    document.getElementById('user-id').value = user.id;
-                    document.getElementById('user-username').value = user.username;
-                    document.getElementById('user-type').value = user.user_type;
+                    // 修复字段映射 - 根据User实体的实际字段名
+                    document.getElementById('user-id').value = user.userId || user.user_id || user.id;
+                    document.getElementById('user-username').value = user.userName || user.user_name || user.username || '';
+                    document.getElementById('user-type').value = user.userType || user.user_type || '';
                     document.getElementById('user-password').value = '';
 
                     document.getElementById('user-modal').style.display = 'flex';
+                })
+                .catch(error => {
+                    console.error('获取用户详情失败:', error);
+                    alert('无法加载用户信息');
                 });
         }
 
@@ -906,7 +928,7 @@
 
             const data = {
                 name: document.getElementById('disease-name').value,
-                category_id: document.getElementById('disease-category').value,
+                categoryId: document.getElementById('disease-category').value,
                 etiology: document.getElementById('disease-etiology').value,
                 symptoms: document.getElementById('disease-symptoms').value,
                 treatment: document.getElementById('disease-treatment').value
@@ -926,6 +948,10 @@
                     } else {
                         alert('保存失败: ' + result.message);
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('请求失败，请检查控制台');
                 });
         });
 
@@ -937,8 +963,8 @@
             const url = `/api/admin/users/${id}`;
 
             const data = {
-                username: document.getElementById('user-username').value,
-                user_type: document.getElementById('user-type').value,
+                userName: document.getElementById('user-username').value,
+                userType: document.getElementById('user-type').value,
                 password: document.getElementById('user-password').value || undefined
             };
 
@@ -956,6 +982,10 @@
                     } else {
                         alert('保存失败: ' + result.message);
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('请求失败，请检查控制台');
                 });
         });
 

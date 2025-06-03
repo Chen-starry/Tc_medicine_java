@@ -17,4 +17,24 @@ public interface SyndromeService {
      * 根据分类ID获取证候
      */
     List<Syndrome> getSyndromesByCategory(Integer categoryId);
+
+    /**
+     * 根据ID获取单个证候
+     */
+    Syndrome getSyndromeById(Integer id);
+
+    /**
+     * 更新证候信息
+     */
+    Syndrome updateSyndrome(Syndrome syndrome);
+
+    /**
+     * 创建新证候
+     */
+    Syndrome createSyndrome(Syndrome syndrome);
+
+    /**
+     * 删除证候
+     */
+    boolean deleteSyndrome(Integer id);
 } 

@@ -167,16 +167,26 @@
 
         .close-btn {
             position: absolute;
-            top: 1rem;
-            right: 1.5rem;
-            font-size: 2rem;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 2.5rem;
             color: #8B4513;
             cursor: pointer;
-            transition: color 0.3s;
+            transition: all 0.3s ease;
+            padding: 0.2rem;
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
         }
 
         .close-btn:hover {
             color: #5D3A1A;
+            background-color: rgba(139, 69, 19, 0.1);
+            transform: scale(1.1);
         }
 
         .modal-content h2 {
@@ -191,8 +201,9 @@
 
         .medicine-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
+            gap: 1rem;
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
             border-bottom: 2px solid rgba(139, 69, 19, 0.3);

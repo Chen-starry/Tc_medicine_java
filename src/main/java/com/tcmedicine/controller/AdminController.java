@@ -13,8 +13,12 @@ import com.tcmedicine.service.MedicineService;
 import com.tcmedicine.service.FeedbackService;
 import com.tcmedicine.service.CategoryService;
 import com.tcmedicine.service.SyndromeService;
+import com.tcmedicine.service.OSSService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -28,6 +32,8 @@ import java.util.Map;
 @RequestMapping("/api/admin")
 @CrossOrigin(origins = {"http://localhost:8080", "http://127.0.0.1:8080"})
 public class AdminController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
 
     @Autowired
     private UserService userService;
@@ -43,6 +49,9 @@ public class AdminController {
 
     @Autowired
     private SyndromeService syndromeService;
+
+    @Autowired
+    private OSSService ossService;
 
     /**
      * 获取所有用户（管理员版本 - 字段格式化）
@@ -225,6 +234,314 @@ public class AdminController {
         } catch (Exception e) {
             e.printStackTrace();
             return ApiResponse.error("获取药材分类失败，请稍后重试");
+        }
+    }
+
+    // ================== 药材管理接口 ==================
+
+    /**
+     * 根据ID获取单个药材详情
+     */
+    @GetMapping("/medicines/{id}")
+    public ApiResponse<Medicine> getMedicineById(@PathVariable Integer id) {
+        try {
+            Medicine medicine = medicineService.getMedicineById(id);
+            if (medicine != null) {
+                return ApiResponse.success("获取药材详情成功", medicine);
+            } else {
+                return ApiResponse.error("药材不存在");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ApiResponse.error("获取药材详情失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 更新药材信息
+     */
+    @PutMapping("/medicines/{id}")
+    public ApiResponse<String> updateMedicine(@PathVariable Integer id, 
+            @RequestParam("name") String name,
+            @RequestParam("category_id") Integer categoryId,
+            @RequestParam("source") String source,
+            @RequestParam("properties") String properties,
+            @RequestParam("taste") String taste,
+            @RequestParam("channels") String channels,
+            @RequestParam("effects") String effects,
+            @RequestParam("contraindications") String contraindications,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
+        try {
+            Medicine medicine = new Medicine();
+            medicine.setMedicineId(id);
+            medicine.setMedicineName(name);
+            medicine.setCategoryId(categoryId);
+            medicine.setSource(source);
+            medicine.setProperties(properties);
+            medicine.setTaste(taste);
+            medicine.setChannels(channels);
+            medicine.setEffects(effects);
+            medicine.setContraindications(contraindications);
+            
+            // 如果有新图片上传，处理图片上传逻辑
+            if (image != null && !image.isEmpty()) {
+                try {
+                    // 获取旧药材信息，用于删除旧图片
+                    Medicine oldMedicine = medicineService.getMedicineById(id);
+                    if (oldMedicine != null && oldMedicine.getImagePath() != null && !oldMedicine.getImagePath().isEmpty()) {
+                        // 删除旧图片
+                        ossService.deleteFile(oldMedicine.getImagePath());
+                    }
+                    
+                    // 上传新图片
+                    String imageUrl = ossService.uploadMedicineImage(image, id);
+                    medicine.setImagePath(imageUrl);
+                    logger.info("药材图片上传成功，ID: {}, URL: {}", id, imageUrl);
+                } catch (Exception e) {
+                    logger.error("药材图片上传失败，ID: {}, 错误: {}", id, e.getMessage(), e);
+                    return ApiResponse.error("图片上传失败: " + e.getMessage());
+                }
+            }
+            
+            Medicine updated = medicineService.updateMedicine(medicine);
+            if (updated != null) {
+                logger.info("药材更新成功，ID: {}", id);
+                return ApiResponse.success("更新药材成功");
+            } else {
+                return ApiResponse.error("更新药材失败");
+            }
+        } catch (Exception e) {
+            logger.error("更新药材失败，ID: {}, 错误: {}", id, e.getMessage(), e);
+            return ApiResponse.error("更新药材失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 新增药材
+     */
+    @PostMapping("/medicines")
+    public ApiResponse<String> createMedicine(@RequestParam("name") String name,
+            @RequestParam("category_id") Integer categoryId,
+            @RequestParam("source") String source,
+            @RequestParam("properties") String properties,
+            @RequestParam("taste") String taste,
+            @RequestParam("channels") String channels,
+            @RequestParam("effects") String effects,
+            @RequestParam("contraindications") String contraindications,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
+        try {
+            Medicine medicine = new Medicine();
+            medicine.setMedicineName(name);
+            medicine.setCategoryId(categoryId);
+            medicine.setSource(source);
+            medicine.setProperties(properties);
+            medicine.setTaste(taste);
+            medicine.setChannels(channels);
+            medicine.setEffects(effects);
+            medicine.setContraindications(contraindications);
+            
+            // 先创建药材获取ID
+            Medicine created = medicineService.createMedicine(medicine);
+            if (created == null) {
+                return ApiResponse.error("创建药材失败");
+            }
+            logger.info("药材创建成功，ID: {}, 名称: {}", created.getMedicineId(), name);
+            
+            // 如果有图片上传，处理图片上传逻辑
+            if (image != null && !image.isEmpty()) {
+                try {
+                    // 使用创建后的药材ID上传图片
+                    String imageUrl = ossService.uploadMedicineImage(image, created.getMedicineId());
+                    created.setImagePath(imageUrl);
+                    
+                    // 更新药材的图片路径
+                    medicineService.updateMedicine(created);
+                    logger.info("药材图片上传成功，ID: {}, URL: {}", created.getMedicineId(), imageUrl);
+                } catch (Exception e) {
+                    logger.error("药材图片上传失败，ID: {}, 错误: {}", created.getMedicineId(), e.getMessage(), e);
+                    return ApiResponse.error("药材创建成功，但图片上传失败: " + e.getMessage());
+                }
+            }
+            
+            return ApiResponse.success("创建药材成功");
+        } catch (Exception e) {
+            logger.error("创建药材失败，名称: {}, 错误: {}", name, e.getMessage(), e);
+            return ApiResponse.error("创建药材失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 删除药材
+     */
+    @DeleteMapping("/medicines/{id}")
+    public ApiResponse<String> deleteMedicine(@PathVariable Integer id) {
+        try {
+            // 先获取药材信息用于删除图片
+            Medicine medicine = medicineService.getMedicineById(id);
+            if (medicine == null) {
+                return ApiResponse.error("药材不存在");
+            }
+            
+            // 删除药材记录
+            boolean success = medicineService.deleteMedicine(id);
+            if (success) {
+                // 删除成功后，尝试删除关联的图片文件
+                if (medicine.getImagePath() != null && !medicine.getImagePath().isEmpty()) {
+                    try {
+                        ossService.deleteFile(medicine.getImagePath());
+                        logger.info("药材图片删除成功，ID: {}, URL: {}", id, medicine.getImagePath());
+                    } catch (Exception e) {
+                        logger.warn("药材图片删除失败，ID: {}, 错误: {}", id, e.getMessage());
+                        // 图片删除失败不影响药材删除的成功状态
+                    }
+                }
+                
+                logger.info("药材删除成功，ID: {}, 名称: {}", id, medicine.getMedicineName());
+                return ApiResponse.success("删除药材成功");
+            } else {
+                return ApiResponse.error("删除药材失败");
+            }
+        } catch (Exception e) {
+            logger.error("删除药材失败，ID: {}, 错误: {}", id, e.getMessage(), e);
+            return ApiResponse.error("删除药材失败: " + e.getMessage());
+        }
+    }
+
+    // ================== 用户管理接口 ==================
+
+    /**
+     * 根据ID获取单个用户详情
+     */
+    @GetMapping("/users/{id}")
+    public ApiResponse<User> getUserById(@PathVariable Integer id) {
+        try {
+            User user = userService.getUserById(id);
+            if (user != null) {
+                return ApiResponse.success("获取用户详情成功", user);
+            } else {
+                return ApiResponse.error("用户不存在");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ApiResponse.error("获取用户详情失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 更新用户信息
+     */
+    @PutMapping("/users/{id}")
+    public ApiResponse<String> updateUser(@PathVariable Integer id, @RequestBody User user) {
+        try {
+            user.setUserId(Long.valueOf(id));
+            boolean success = userService.updateUser(user);
+            if (success) {
+                return ApiResponse.success("更新用户成功");
+            } else {
+                return ApiResponse.error("更新用户失败");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ApiResponse.error("更新用户失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 删除用户
+     */
+    @DeleteMapping("/users/{id}")
+    public ApiResponse<String> deleteUser(@PathVariable Integer id) {
+        try {
+            // 先检查用户是否存在
+            User user = userService.getUserById(id);
+            if (user == null) {
+                return ApiResponse.error("用户不存在");
+            }
+            
+            boolean success = userService.deleteUser(id);
+            if (success) {
+                logger.info("用户删除成功，ID: {}, 用户名: {}", id, user.getUserName());
+                return ApiResponse.success("删除用户成功");
+            } else {
+                return ApiResponse.error("删除用户失败");
+            }
+        } catch (Exception e) {
+            logger.error("删除用户失败，ID: {}, 错误: {}", id, e.getMessage(), e);
+            return ApiResponse.error("删除用户失败: " + e.getMessage());
+        }
+    }
+
+    // ================== 疾病管理接口 ==================
+
+    /**
+     * 根据ID获取单个疾病详情
+     */
+    @GetMapping("/diseases/{id}")
+    public ApiResponse<Syndrome> getDiseaseById(@PathVariable Integer id) {
+        try {
+            Syndrome syndrome = syndromeService.getSyndromeById(id);
+            if (syndrome != null) {
+                return ApiResponse.success("获取疾病详情成功", syndrome);
+            } else {
+                return ApiResponse.error("疾病不存在");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ApiResponse.error("获取疾病详情失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 更新疾病信息
+     */
+    @PutMapping("/diseases/{id}")
+    public ApiResponse<Syndrome> updateDisease(@PathVariable Integer id, @RequestBody Syndrome syndrome) {
+        try {
+            syndrome.setId(id);
+            Syndrome updated = syndromeService.updateSyndrome(syndrome);
+            return ApiResponse.success("更新疾病成功", updated);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ApiResponse.error("更新疾病失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 新增疾病
+     */
+    @PostMapping("/diseases")
+    public ApiResponse<Syndrome> createDisease(@RequestBody Syndrome syndrome) {
+        try {
+            Syndrome created = syndromeService.createSyndrome(syndrome);
+            return ApiResponse.success("创建疾病成功", created);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ApiResponse.error("创建疾病失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 删除疾病
+     */
+    @DeleteMapping("/diseases/{id}")
+    public ApiResponse<String> deleteDisease(@PathVariable Integer id) {
+        try {
+            // 先检查疾病是否存在
+            Syndrome syndrome = syndromeService.getSyndromeById(id);
+            if (syndrome == null) {
+                return ApiResponse.error("疾病不存在");
+            }
+            
+            boolean success = syndromeService.deleteSyndrome(id);
+            if (success) {
+                logger.info("疾病删除成功，ID: {}, 名称: {}", id, syndrome.getName());
+                return ApiResponse.success("删除疾病成功");
+            } else {
+                return ApiResponse.error("删除疾病失败");
+            }
+        } catch (Exception e) {
+            logger.error("删除疾病失败，ID: {}, 错误: {}", id, e.getMessage(), e);
+            return ApiResponse.error("删除疾病失败: " + e.getMessage());
         }
     }
 } 

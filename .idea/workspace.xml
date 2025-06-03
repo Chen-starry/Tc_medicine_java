@@ -7,9 +7,17 @@
     <list default="true" id="a48d3a27-55a7-4f08-a91c-542013c24a96" name="更改" comment="not vergin">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/tcmedicine/controller/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/tcmedicine/controller/AdminController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/tcmedicine/service/SyndromeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/tcmedicine/service/SyndromeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/tcmedicine/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/tcmedicine/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/tcmedicine/service/impl/SyndromeServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/tcmedicine/service/impl/SyndromeServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/tcmedicine/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/tcmedicine/service/impl/UserServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/sql/email_verification_migration.sql" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/sql/init.sql" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/sql/user_dashboard_tables.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/static/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/static/medicine.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/medicine.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/static/user-dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/user-dashboard.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/xlxw.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sql/xlxw.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -91,7 +99,7 @@
       <updated>1748791277162</updated>
       <workItem from="1748791278279" duration="8334000" />
       <workItem from="1748802586712" duration="16913000" />
-      <workItem from="1748919885938" duration="2787000" />
+      <workItem from="1748919885938" duration="8680000" />
     </task>
     <task id="LOCAL-00001" summary="not vergin">
       <option name="closed" value="true" />

@@ -46,4 +46,19 @@ public interface UserService {
      */
     List<AdminUserDto> getAllUsersForAdmin();
 
+    /**
+     * 根据ID获取用户
+     */
+    User getUserById(Integer id);
+
+    /**
+     * 更新用户信息
+     */
+    boolean updateUser(User user);
+
+    /**
+     * 删除用户
+     */
+    boolean deleteUser(Integer id);
+
 } 
