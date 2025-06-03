@@ -1,0 +1,93 @@
+server:
+  port: 8080
+  servlet:
+    # context-path: /api  # 暂时移除，简化静态资源访问
+    encoding:
+      charset: UTF-8
+      enabled: true
+
+spring:
+  application:
+    name: tc-medicine
+  
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/tc_medicine?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: Fhy040421!
+    
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
+  # 邮件服务配置
+  mail:
+    username: 885103864@qq.com
+    password: bguoduqeajmrbcig
+    host: smtp.qq.com
+    port: 465
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          socketFactory:
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
+    valid: 5
+    title: "杏林析微 - 用户认证"
+    template: "您的动态验证码为：<strong style='color: red'>%s</strong>，%d分钟内有效，若非本人操作，请勿泄露。"
+      
+  security:
+    user:
+      name: admin
+      password: admin123
+
+# MyBatis Plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.tcmedicine.entity
+
+# JWT配置
+jwt:
+  secret: tcMedicineSecretKey2024ForJWTTokenGenerationAndValidationWithSufficientLengthToMeetSecurityRequirements256Bits
+  expiration: 86400000  # 24小时
+
+# 阿里云OSS配置
+aliyun:
+  oss:
+    endpoint: https://oss-cn-hangzhou.aliyuncs.com
+    access-key-id: ${ALIYUN_ACCESS_KEY_ID:}
+    access-key-secret: ${ALIYUN_ACCESS_KEY_SECRET:}
+    bucket-name: ${ALIYUN_OSS_BUCKET:tc-medicine}
+
+# Python预测服务配置
+prediction:
+  service:
+    url: http://localhost:8001
+
+# 阿里云通义千问API配置
+dashscope:
+  api:
+    key: sk-28ef9d6a7cae41f78196db6bccafcaae
+    url: https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation
+    model: qwen-plus
+    max-tokens: 2000
+    temperature: 0.7
+    top-p: 0.8
+    
+# 日志配置
+logging:
+  level:
+    com.tcmedicine: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" 

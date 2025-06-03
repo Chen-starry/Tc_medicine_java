@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户后台 - 中药材识别系统</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap"
+          rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.9.1/font/bootstrap-icons.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+
+        body {
+            background: url("/static/UI/bg_dash.png") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            color: #5D3A1A;
+        }
+
+        .user-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: rgba(245, 245, 220, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #8B4513;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 2.5rem;
+            color: #8B4513;
+            flex: 1;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #8B4513;
+            object-fit: cover;
+            cursor: pointer;
+            background-color: #f5f5dc;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .username-display {
+            font-size: 1.2rem;
+            color: #5D3A1A;
+            font-weight: bold;
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(245, 245, 220, 0.9);
+            color: #5D3A1A;
+            padding: 10px 15px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .home-btn:hover {
+            background: rgba(245, 245, 220, 1);
+            color: #8B4513;
+            transform: translateY(-2px);
+        }
+
+        .user-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #8B4513;
+            gap: 10px;
+        }
+
+        .user-tab {
+            padding: 10px 20px;
+            background: #D2B48C;
+            color: #5D3A1A;
+            border: none;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 16px;
+            margin-bottom: -1px;
+        }
+
+        .user-tab:hover, .user-tab.active {
+            background: #8B4513;
+            color: #F5F5DC;
+            transform: translateY(-2px);
+        }
+
+        .user-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .user-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .content-title {
+            font-size: 1.5rem;
+            color: #8B4513;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 14px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: #8B4513;
+            color: #F5F5DC;
+        }
+
+        .btn-primary:hover {
+            background: #5D3A1A;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #DC3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #C82333;
+        }
+
+        .btn-secondary {
+            background: #6C757D;
+            color: white;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            color: #8B4513;
+            margin: 0;
+        }
+
+        .medicine-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        .medicine-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #5D3A1A;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #D2B48C;
+            border-radius: 8px;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 14px;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #8B4513;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .modal-content {
+            background-color: rgba(245, 245, 220, 0.95);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #8B4513;
+        }
+
+        .close:hover {
+            color: #5D3A1A;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #8B4513;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .avatar-upload {
+            position: relative;
+            display: inline-block;
+        }
+
+        .avatar-upload input[type="file"] {
+            display: none;
+        }
+
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            cursor: pointer;
+        }
+
+        .avatar-upload:hover .avatar-overlay {
+            opacity: 1;
+        }
+
+        .recognition-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .recognition-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .recognition-image-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .recognition-image-placeholder i {
+            font-size: 24px;
+            margin-bottom: 4px;
+            opacity: 0.6;
+        }
+
+        .recognition-info {
+            flex: 1;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #ffaa00, #44ff44);
+            transition: width 0.3s;
+        }
+
+        .health-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .user-container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+
+            .user-header {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .user-tabs {
+                justify-content: center;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .favorites-list .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        .favorites-list .empty-state i {
+            font-size: 48px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 15px;
+        }
+
+        .favorites-list .empty-state p {
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+
+        /* 验证码按钮样式 - 与注册页面保持一致 */
+        .verification-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 48px;
+        }
+
+        .verification-input-wrapper {
+            position: relative;
+            flex: 1;
+            height: 100%;
+        }
+
+        .verification-input-wrapper input {
+            width: 100%;
+            height: 100%;
+            padding: 10px 15px;
+            border: 2px solid #D2B48C;
+            border-radius: 8px;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 14px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .verification-input-wrapper input:focus {
+            border-color: #8B4513;
+            box-shadow: 0 0 8px rgba(139, 69, 19, 0.2);
+            outline: none;
+        }
+
+        .btn-send-code {
+            height: 100%;
+            padding: 0 24px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 130px;
+            box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+
+        .btn-send-code:hover:not(:disabled) {
+            background: linear-gradient(135deg, #218838, #1ea080);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-send-code:disabled {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2);
+        }
+
+        .btn-send-code:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+        }
+
+        /* 按钮加载动画 */
+        .btn-send-code.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .btn-send-code.loading::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin: -8px 0 0 -8px;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .verification-group {
+                flex-direction: column;
+                gap: 10px;
+                height: auto;
+            }
+            
+            .verification-input-wrapper,
+            .btn-send-code {
+                height: 48px;
+            }
+            
+            .btn-send-code {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="home-btn">
+        <i class="bi bi-house-door"></i> 返回首页
+    </a>
+
+    <div class="user-container">
+        <div class="user-header">
+            <h1 class="user-title">用户后台</h1>
+            <div class="user-info">
+                <div class="avatar-upload">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiNmNWY1ZGMiLz4KPGNpcmNsZSBjeD0iNDAiIGN5PSIzMiIgcj0iMTIiIGZpbGw9IiM4QjQ1MTMiLz4KPHBhdGggZD0iTTIwIDY1QzIwIDU2IDI5IDQ5IDQwIDQ5QzUxIDQ5IDYwIDU2IDYwIDY1VjcwSDIwVjY1WiIgZmlsbD0iIzhCNDUxMyIvPgo8L3N2Zz4K" alt="用户头像" class="user-avatar" id="user-avatar">
+                    <div class="avatar-overlay">
+                        <i class="bi bi-camera" style="color: white; font-size: 24px;"></i>
+                    </div>
+                    <input type="file" id="avatar-input" accept="image/*">
+                </div>
+                <div class="username-display" id="username-display">用户名</div>
+            </div>
+        </div>
+
+        <div class="user-tabs">
+            <div class="user-tab active" data-tab="profile">个人资料</div>
+            <div class="user-tab" data-tab="favorites">收藏夹</div>
+            <div class="user-tab" data-tab="recognition">识别历史</div>
+            <div class="user-tab" data-tab="health">健康档案</div>
+        </div>
+
+        <!-- 个人资料 -->
+        <div class="user-content active" id="profile-content">
+            <div class="content-header">
+                <h3 class="content-title">个人资料管理</h3>
+            </div>
+            
+            <div class="card">
+                <h4>基本信息</h4>
+                <div class="form-group">
+                    <label for="username-input">用户名</label>
+                    <input type="text" id="username-input" placeholder="请输入新用户名">
+                    <button class="btn btn-primary" onclick="updateUsername()" style="margin-top: 10px;">
+                        <i class="bi bi-check"></i> 更新用户名
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description-input">个人简介</label>
+                    <textarea id="description-input" rows="4" placeholder="请输入个人简介"></textarea>
+                    <button class="btn btn-primary" onclick="updateDescription()" style="margin-top: 10px;">
+                        <i class="bi bi-check"></i> 更新简介
+                    </button>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h4>密码修改</h4>
+                <div class="form-group">
+                    <label for="email-input">邮箱</label>
+                    <input type="email" id="email-input" placeholder="请输入邮箱地址">
+                </div>
+                <div class="form-group">
+                    <label for="verification-code">验证码</label>
+                    <div class="verification-group">
+                        <div class="verification-input-wrapper">
+                            <input type="text" id="verification-code" placeholder="请输入验证码" maxlength="6">
+                        </div>
+                        <button type="button" id="send-code-btn" class="btn-send-code" onclick="sendVerificationCode()">
+                            <span id="btn-text">发送验证码</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="new-password">新密码</label>
+                    <input type="password" id="new-password" placeholder="请输入新密码">
+                </div>
+                <button class="btn btn-primary" onclick="changePassword()">
+                    <i class="bi bi-shield-check"></i> 修改密码
+                </button>
+            </div>
+        </div>
+
+        <!-- 收藏夹 -->
+        <div class="user-content" id="favorites-content">
+            <div class="content-header">
+                <h3 class="content-title">我的收藏</h3>
+                <button class="btn btn-primary" onclick="loadFavorites()">
+                    <i class="bi bi-arrow-clockwise"></i> 刷新
+                </button>
+            </div>
+            <div id="favorites-list" class="card-grid">
+                <!-- 收藏列表将通过JavaScript动态加载 -->
+            </div>
+        </div>
+
+        <!-- 识别历史 -->
+        <div class="user-content" id="recognition-content">
+            <div class="content-header">
+                <h3 class="content-title">识别历史</h3>
+                <button class="btn btn-primary" onclick="loadRecognitionHistory()">
+                    <i class="bi bi-arrow-clockwise"></i> 刷新
+                </button>
+            </div>
+            <div id="recognition-list">
+                <!-- 识别历史将通过JavaScript动态加载 -->
+            </div>
+        </div>
+
+        <!-- 健康档案 -->
+        <div class="user-content" id="health-content">
+            <div class="content-header">
+                <h3 class="content-title">健康档案</h3>
+                <button class="btn btn-primary" onclick="saveHealthProfile()">
+                    <i class="bi bi-check"></i> 保存档案
+                </button>
+            </div>
+            
+            <div class="card">
+                <form class="health-form" id="health-form">
+                    <div class="form-group">
+                        <label for="age">年龄</label>
+                        <input type="number" id="age" placeholder="请输入年龄">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gender">性别</label>
+                        <select id="gender">
+                            <option value="">请选择性别</option>
+                            <option value="0">女</option>
+                            <option value="1">男</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="height">身高 (cm)</label>
+                        <input type="number" id="height" step="0.1" placeholder="请输入身高">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weight">体重 (kg)</label>
+                        <input type="number" id="weight" step="0.1" placeholder="请输入体重">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="blood-type">血型</label>
+                        <select id="blood-type">
+                            <option value="">请选择血型</option>
+                            <option value="A">A型</option>
+                            <option value="B">B型</option>
+                            <option value="AB">AB型</option>
+                            <option value="O">O型</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="allergies">过敏史</label>
+                        <textarea id="allergies" rows="3" placeholder="请输入过敏史"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="chronic-diseases">慢性疾病</label>
+                        <textarea id="chronic-diseases" rows="3" placeholder="请输入慢性疾病"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="current-medications">当前用药</label>
+                        <textarea id="current-medications" rows="3" placeholder="请输入当前用药"></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="health-notes">健康备注</label>
+                        <textarea id="health-notes" rows="4" placeholder="请输入健康备注"></textarea>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentUser = null;
+        let authToken = localStorage.getItem('token'); // 从localStorage获取token
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查登录状态
+            if (!authToken) {
+                alert('请先登录');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // 加载用户基本资料
+            loadUserProfile();
+
+            // 设置用户名显示
+            const username = localStorage.getItem('username');
+            if (username) {
+                document.getElementById('username-display').textContent = username;
+            }
+
+            // 设置标签页切换事件
+            document.querySelectorAll('.user-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    
+                    // 移除所有活动状态
+                    document.querySelectorAll('.user-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.user-content').forEach(c => c.classList.remove('active'));
+                    
+                    // 添加当前活动状态
+                    this.classList.add('active');
+                    document.getElementById(tabName + '-content').classList.add('active');
+                    
+                    // 根据标签页加载相应内容
+                    switch(tabName) {
+                        case 'favorites':
+                            loadFavorites();
+                            break;
+                        case 'recognition':
+                            loadRecognitionHistory();
+                            break;
+                        case 'health':
+                            loadHealthProfile();
+                            break;
+                    }
+                });
+            });
+
+            // 验证码输入框只允许数字
+            const verificationCodeInput = document.getElementById('verification-code');
+            if (verificationCodeInput) {
+                verificationCodeInput.addEventListener('input', function(e) {
+                    // 只保留数字
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    
+                    // 限制最大长度为6位
+                    if (this.value.length > 6) {
+                        this.value = this.value.slice(0, 6);
+                    }
+                });
+            }
+
+            // 设置头像上传事件
+            document.getElementById('avatar-input').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    uploadAvatar(file);
+                }
+            });
+
+            document.querySelector('.avatar-upload').addEventListener('click', function() {
+                document.getElementById('avatar-input').click();
+            });
+        });
+
+        // API请求工具函数
+        async function apiRequest(url, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                }
+            };
+
+            // 正确合并headers和其他options
+            const mergedOptions = {
+                ...defaultOptions,
+                ...options,
+                headers: {
+                    ...defaultOptions.headers,
+                    ...(options.headers || {})
+                }
+            };
+
+            const response = await fetch(url, mergedOptions);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || '请求失败');
+            }
+
+            return data;
+        }
+
+        // 加载用户资料
+        async function loadUserProfile() {
+            try {
+                // 从数据库加载用户的基本信息
+                const userData = await apiRequest('/api/user/dashboard/profile');
+                if (userData.success) {
+                    const profile = userData.data;
+                    // 设置用户名显示
+                    document.getElementById('username-display').textContent = profile.username || '用户名';
+                    
+                    // 设置邮箱输入框的值
+                    if (profile.email) {
+                        document.getElementById('email-input').value = profile.email;
+                    }
+                    
+                    // 设置头像
+                    if (profile.avatarUrl) {
+                        document.getElementById('user-avatar').src = profile.avatarUrl;
+                    }
+                    
+                    // 设置个人简介
+                    if (profile.profileDescription) {
+                        document.getElementById('description-input').value = profile.profileDescription;
+                    }
+                } else {
+                    console.error('加载用户资料失败:', userData.message);
+                }
+            } catch (error) {
+                console.error('加载用户资料失败:', error);
+                // 如果加载失败，使用localStorage中的用户名
+                const username = localStorage.getItem('username');
+                if (username) {
+                    document.getElementById('username-display').textContent = username;
+                }
+            }
+        }
+
+        // 上传头像
+        async function uploadAvatar(file) {
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/api/user/avatar', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('user-avatar').src = data.data;
+                    alert('头像上传成功！');
+                } else {
+                    alert('头像上传失败：' + data.message);
+                }
+            } catch (error) {
+                console.error('上传头像失败:', error);
+                alert('头像上传失败：' + error.message);
+            }
+        }
+
+        // 更新用户名
+        async function updateUsername() {
+            const newUsername = document.getElementById('username-input').value.trim();
+            if (!newUsername) {
+                alert('请输入新用户名');
+                return;
+            }
+
+            try {
+                const data = await apiRequest('/api/user/username', {
+                    method: 'PUT',
+                    body: JSON.stringify({ username: newUsername })
+                });
+
+                if (data.success) {
+                    document.getElementById('username-display').textContent = newUsername;
+                    localStorage.setItem('username', newUsername);
+                    alert('用户名更新成功！');
+                    document.getElementById('username-input').value = '';
+                } else {
+                    alert('用户名更新失败：' + data.message);
+                }
+            } catch (error) {
+                console.error('更新用户名失败:', error);
+                alert('用户名更新失败：' + error.message);
+            }
+        }
+
+        // 更新个人简介
+        async function updateDescription() {
+            const description = document.getElementById('description-input').value.trim();
+
+            try {
+                const data = await apiRequest('/api/user/profile-description', {
+                    method: 'PUT',
+                    body: JSON.stringify({ description: description })
+                });
+
+                if (data.success) {
+                    alert('个人简介更新成功！');
+                } else {
+                    alert('个人简介更新失败：' + data.message);
+                }
+            } catch (error) {
+                console.error('更新个人简介失败:', error);
+                alert('个人简介更新失败：' + error.message);
+            }
+        }
+
+        // 发送验证码（修改密码用）
+        async function sendVerificationCode() {
+            const sendButton = document.getElementById('send-code-btn');
+            const btnText = document.getElementById('btn-text');
+            const emailInput = document.getElementById('email-input');
+            
+            if (!emailInput || !emailInput.value.trim()) {
+                alert('请先加载用户信息或输入邮箱地址');
+                return;
+            }
+
+            const email = emailInput.value.trim();
+            
+            // 添加加载效果
+            sendButton.disabled = true;
+            sendButton.classList.add('loading');
+            btnText.innerText = '发送中...';
+
+            try {
+                const response = await apiRequest('/api/user/change-password/send-code', {
+                    method: 'POST',
+                    body: JSON.stringify({ email: email })
+                });
+
+                // 移除加载效果
+                sendButton.classList.remove('loading');
+
+                if (response.success) {
+                    alert('验证码已发送到您的邮箱，请查收');
+                    startCountdown(sendButton, btnText);
+                } else {
+                    alert(response.message || '验证码发送失败');
+                    resetSendButton(sendButton, btnText);
+                }
+            } catch (error) {
+                console.error('Send verification code error:', error);
+                sendButton.classList.remove('loading');
+                alert('发送验证码失败，请重试');
+                resetSendButton(sendButton, btnText);
+            }
+        }
+
+        // 倒计时功能
+        function startCountdown(button, btnText) {
+            let seconds = 60;
+            
+            const countdown = () => {
+                if (seconds > 0) {
+                    btnText.innerText = `${seconds}秒后重发`;
+                    seconds--;
+                    setTimeout(countdown, 1000);
+                } else {
+                    button.disabled = false;
+                    button.classList.remove('loading');
+                    btnText.innerText = '重新发送';
+                }
+            };
+            
+            countdown();
+        }
+
+        // 重置发送按钮
+        function resetSendButton(button, btnText) {
+            button.disabled = false;
+            button.classList.remove('loading');
+            btnText.innerText = '发送验证码';
+        }
+
+        // 修改密码
+        async function changePassword() {
+            const email = document.getElementById('email-input').value.trim();
+            const verificationCode = document.getElementById('verification-code').value.trim();
+            const newPassword = document.getElementById('new-password').value.trim();
+
+            if (!email || !verificationCode || !newPassword) {
+                alert('请填写所有字段');
+                return;
+            }
+
+            try {
+                const data = await apiRequest('/api/user/password', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        email: email,
+                        verificationCode: verificationCode,
+                        newPassword: newPassword
+                    })
+                });
+
+                if (data.success) {
+                    alert('密码修改成功！');
+                    // 清空表单
+                    document.getElementById('email-input').value = '';
+                    document.getElementById('verification-code').value = '';
+                    document.getElementById('new-password').value = '';
+                } else {
+                    alert('密码修改失败：' + data.message);
+                }
+            } catch (error) {
+                console.error('修改密码失败:', error);
+                alert('密码修改失败：' + error.message);
+            }
+        }
+
+        // 加载收藏列表
+        async function loadFavorites() {
+            try {
+                const data = await apiRequest('/api/user/favorites');
+                const favoritesList = document.getElementById('favorites-list');
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    favoritesList.innerHTML = data.data.map(favorite => `
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">${favorite.medicineName || '未知药材'}</h5>
+                                <button class="btn btn-danger" onclick="removeFavorite(${favorite.medicineId})">
+                                    <i class="bi bi-heart-fill"></i> 取消收藏
+                                </button>
+                            </div>
+                            <div class="medicine-info">
+                                ${favorite.medicineImagePath ? `<img src="${favorite.medicineImagePath}" alt="${favorite.medicineName}" class="medicine-image">` : ''}
+                                <div>
+                                    <p><strong>功效:</strong> ${favorite.medicineEffects || '暂无信息'}</p>
+                                    <p><strong>收藏时间:</strong> ${new Date(favorite.createTime).toLocaleString()}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    favoritesList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="bi bi-heart"></i>
+                            <h4>暂无收藏</h4>
+                            <p>去发现更多药材并收藏吧！</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('加载收藏列表失败:', error);
+                document.getElementById('favorites-list').innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <h4>加载失败</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 取消收藏
+        async function removeFavorite(medicineId) {
+            if (!confirm('确定要取消收藏这个药材吗？')) {
+                return;
+            }
+
+            try {
+                const data = await apiRequest(`/api/user/favorites/${medicineId}`, {
+                    method: 'DELETE'
+                });
+
+                if (data.success) {
+                    alert('取消收藏成功！');
+                    loadFavorites(); // 重新加载收藏列表
+                } else {
+                    alert('取消收藏失败：' + data.message);
+                }
+            } catch (error) {
+                console.error('取消收藏失败:', error);
+                alert('取消收藏失败：' + error.message);
+            }
+        }
+
+        // 加载识别历史
+        async function loadRecognitionHistory() {
+            try {
+                const data = await apiRequest('/api/user/recognition-history');
+                const recognitionList = document.getElementById('recognition-list');
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    recognitionList.innerHTML = data.data.map(record => {
+                        // 检查图片URL是否为上传失败的占位符
+                        const isUploadFailed = record.imageUrl && record.imageUrl.startsWith('upload_failed_');
+                        const imageDisplay = isUploadFailed ? 
+                            `<div class="recognition-image-placeholder">
+                                <i class="bi bi-image"></i>
+                                <small>图片上传失败</small>
+                            </div>` :
+                            `<img src="${record.imageUrl}" alt="识别图片" class="recognition-image">`;
+                        
+                        return `
+                            <div class="recognition-item">
+                                ${imageDisplay}
+                                <div class="recognition-info">
+                                    <h5>${record.resultName || '识别失败'}</h5>
+                                    <p>识别时间: ${new Date(record.recognitionTime).toLocaleString()}</p>
+                                    ${record.confidence ? `
+                                        <div>
+                                            <span>置信度: ${(record.confidence * 100).toFixed(1)}%</span>
+                                            <div class="confidence-bar">
+                                                <div class="confidence-fill" style="width: ${record.confidence * 100}%"></div>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    ${record.medicineEffects ? `<p><strong>功效:</strong> ${record.medicineEffects}</p>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    recognitionList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="bi bi-camera"></i>
+                            <h4>暂无识别记录</h4>
+                            <p>去识别一些药材吧！</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('加载识别历史失败:', error);
+                document.getElementById('recognition-list').innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <h4>加载失败</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 加载健康档案
+        async function loadHealthProfile() {
+            try {
+                const data = await apiRequest('/api/user/health-profile');
+                
+                if (data.success && data.data) {
+                    const profile = data.data;
+                    document.getElementById('age').value = profile.age || '';
+                    document.getElementById('gender').value = profile.gender || '';
+                    document.getElementById('height').value = profile.height || '';
+                    document.getElementById('weight').value = profile.weight || '';
+                    document.getElementById('blood-type').value = profile.bloodType || '';
+                    document.getElementById('allergies').value = profile.allergies || '';
+                    document.getElementById('chronic-diseases').value = profile.chronicDiseases || '';
+                    document.getElementById('current-medications').value = profile.currentMedications || '';
+                    document.getElementById('health-notes').value = profile.healthNotes || '';
+                }
+            } catch (error) {
+                console.error('加载健康档案失败:', error);
+                // 如果是404错误，说明用户还没有健康档案，这是正常的
+                if (!error.message.includes('404')) {
+                    alert('加载健康档案失败：' + error.message);
+                }
+            }
+        }
+
+        // 保存健康档案
+        async function saveHealthProfile() {
+            const healthProfile = {
+                age: document.getElementById('age').value ? parseInt(document.getElementById('age').value) : null,
+                gender: document.getElementById('gender').value ? parseInt(document.getElementById('gender').value) : null,
+                height: document.getElementById('height').value ? parseFloat(document.getElementById('height').value) : null,
+                weight: document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null,
+                bloodType: document.getElementById('blood-type').value || null,
+                allergies: document.getElementById('allergies').value || null,
+                chronicDiseases: document.getElementById('chronic-diseases').value || null,
+                currentMedications: document.getElementById('current-medications').value || null,
+                healthNotes: document.getElementById('health-notes').value || null
+            };
+
+            try {
+                const data = await apiRequest('/api/user/health-profile', {
+                    method: 'POST',
+                    body: JSON.stringify(healthProfile)
+                });
+
+                if (data.success) {
+                    alert('健康档案保存成功！');
+                } else {
+                    alert('健康档案保存失败：' + data.message);
+                }
+            } catch (error) {
+                console.error('保存健康档案失败:', error);
+                alert('保存健康档案失败：' + error.message);
+            }
+        }
+    </script>
+</body>
+</html> 

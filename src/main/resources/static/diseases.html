@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>《杏林析微》证候典籍</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap"
+          rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --book-width: 1200px;
+            --book-height: 800px;
+            --page-bg: #f5e6d3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+
+        .classic-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 2.5rem;
+            color: #8B4513;
+            text-shadow: 2px 2px 4px rgba(139, 69, 19, 0.3);
+            position: relative;
+            display: inline-block;
+        }
+
+        .classic-title::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #8B4513, transparent);
+        }
+
+        body {
+
+            background: url("/static/UI/bg_diseases.png") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #8b4513;
+            padding: 8px 20px;
+            border-radius: 20px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .home-btn:hover {
+            background: #8b4513;
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .book-container {
+            background: #654321;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .book-content {
+            display: flex;
+            min-height: var(--book-height);
+            background: var(--page-bg);
+            position: relative;
+            font-size: 20px;
+        }
+
+        .category-list {
+            width: 250px;
+            border-right: 2px solid #8b4513;
+            padding: 1rem;
+            background: linear-gradient(to right, #f5e6d3 95%, #e0d0b8);
+
+        }
+
+        .category-item {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .category-item:hover {
+            background: #d4c4a9;
+            transform: translateX(10px);
+        }
+
+        .syndrome-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            font-size: 20px;
+        }
+
+        .syndrome-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .syndrome-title {
+            color: #8b0000;
+            border-bottom: 2px solid #8b0000;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stamp {
+            position: absolute;
+            right: 50px;
+            bottom: 30px;
+            opacity: 0.1;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 3rem;
+            transform: rotate(-15deg);
+            color: #8b0000;
+        }
+
+        .container.py-5 {
+            padding-top: 1rem !important;
+        }
+
+        h5 {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="d-flex justify-content-center mt-4">
+    <h1 class="classic-title">《杏林析微》证候典籍</h1>
+</div>
+
+<a href="/" class="home-btn text-decoration-none text-dark">
+    <i class="bi bi-house-door"></i> 返回首页
+</a>
+
+
+<div class="container py-5">
+    <div class="book-container">
+        <div class="book-content">
+            <div class="category-list" id="categoryList"></div>
+            <div class="syndrome-content" id="syndromeContent">
+                <div class="text-center mt-5 text-muted">请从左侧选择分类</div>
+            </div>
+            <div class="stamp">杏林析微</div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.9.1/font/bootstrap-icons.min.css">
+
+<script>
+    // 获取分类数据
+    fetch('/api/categories')
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('categoryList');
+            data.forEach(cat => {
+                const div = document.createElement('div');
+                div.className = 'category-item';
+                div.innerHTML = `
+                        <h5>${cat.name}</h5>
+                        <small class="text-muted">${cat.id}号典籍</small>
+                    `;
+                div.onclick = () => loadSyndromes(cat.id);
+                container.appendChild(div);
+            });
+        });
+
+    // 加载证候数据
+    function loadSyndromes(categoryId) {
+        fetch(`/api/syndromes/${categoryId}`)
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('syndromeContent');
+                container.innerHTML = data.map(syn => `
+                        <div class="syndrome-card">
+                            <h3 class="syndrome-title">${syn.name}</h3>
+                            <div class="mb-3">
+                                <h5>病因病机</h5>
+                                <p class="ps-3">${syn.etiology}</p>
+                            </div>
+                            <div class="mb-3">
+                                <h5>临床表现</h5>
+                                <p class="ps-3">${syn.symptoms}</p>
+                            </div>
+                            <div>
+                                <h5>治法方药</h5>
+                                <p class="ps-3">${syn.treatment}</p>
+                            </div>
+                        </div>
+                    `).join('');
+            });
+    }
+</script>
+</body>
+</html>

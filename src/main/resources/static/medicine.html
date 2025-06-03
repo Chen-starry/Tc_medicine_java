@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《杏林析微》药材柜</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap"
+          rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+
+        /* 基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            color: #5D3A1A;
+            position: relative;
+            overflow-x: hidden;
+            min-height: 100vh;
+            background: url("/static/UI/bg_medicine.png") no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        /* 水墨背景 - 移除原样式，保留作为备用 */
+        .watercolor-bg {
+            display: none; /* 隐藏原背景 */
+        }
+
+        /* 标题样式 */
+        header {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        header h1 {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 2.5rem;
+            color: #8B4513;
+            text-shadow: 2px 2px 4px rgba(139, 69, 19, 0.3);
+            position: relative;
+            display: inline-block;
+        }
+
+        header h1::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #8B4513, transparent);
+        }
+
+        /* 中药柜容器 */
+        main {
+            padding: 0 2rem 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .cabinet-container {
+            background-color: rgba(245, 245, 220, 0.7);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 分类卡片 */
+        .category-card {
+            background-color: rgba(210, 180, 140, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(139, 69, 19, 0.2);
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+        }
+
+        .category-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.5rem;
+            color: #5D3A1A;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(139, 69, 19, 0.2);
+            margin-bottom: 1rem;
+        }
+
+        .category-description {
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        /* 药材格子 */
+        .medicines-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .medicine-item {
+            background-color: rgba(255, 248, 220, 0.85);
+            border: 2px solid #CDAA7D;
+            border-radius: 8px;
+            color: #5D3A1A;
+            padding: 1rem;
+            width: 140px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .medicine-item:hover {
+            background-color: rgba(255, 228, 181, 0.95);
+            border-color: #8B4513;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(139, 69, 19, 0.2);
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background-color: rgba(253, 245, 230, 0.97);
+            border: 3px solid #8B4513;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 2rem;
+            position: relative;
+            animation: modalFadeIn 0.3s;
+            font-size: 17px;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            color: #8B4513;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #5D3A1A;
+        }
+
+        .modal-content h2 {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 2rem;
+            color: #8B4513;
+            text-align: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(139, 69, 19, 0.3);
+        }
+
+        .medicine-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(139, 69, 19, 0.3);
+        }
+
+        .medicine-header h2 {
+            margin: 0;
+            text-align: left;
+            border: none;
+            padding: 0;
+        }
+
+        .favorite-btn {
+            background: transparent;
+            border: 2px solid #8B4513;
+            color: #8B4513;
+            padding: 8px 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            min-width: 100px;
+            justify-content: center;
+        }
+
+        .favorite-btn:hover {
+            background: #8B4513;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(139, 69, 19, 0.3);
+        }
+
+        .favorite-btn.favorited {
+            background: #8B4513;
+            color: white;
+            border-color: #5D3A1A;
+        }
+
+        .favorite-btn.favorited:hover {
+            background: #5D3A1A;
+            border-color: #5D3A1A;
+        }
+
+        .favorite-btn i {
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .favorite-btn:hover i {
+            transform: scale(1.2);
+        }
+
+        .favorite-btn.favorited i {
+            color: #ff6b6b;
+        }
+
+        .category-info {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #5D3A1A;
+            margin-bottom: 1.5rem;
+        }
+
+        .medicine-image-container {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .medicine-image {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            background-color: white;
+            border: 2px solid #CDAA7D;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #8B4513;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .medicine-image::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 60%, rgba(205, 170, 125, 0.1) 60.1%, rgba(205, 170, 125, 0.1) 80%, transparent 80.1%);
+        }
+
+        .image-caption {
+            font-size: 0.9rem;
+            color: #5D3A1A;
+            margin-top: 0.5rem;
+        }
+
+        .medicine-details {
+            background-color: rgba(255, 248, 220, 0.7);
+            border-radius: 10px;
+            border: 1px solid rgba(139, 69, 19, 0.2);
+            padding: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .medicine-details p {
+            margin-bottom: 0.8rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .medicine-item {
+                width: calc(50% - 0.5rem);
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 1.5rem;
+            }
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #8b4513;
+            padding: 8px 20px;
+            border-radius: 20px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .home-btn:hover {
+            background: #8b4513;
+            color: white !important;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+<div class="watercolor-bg"></div>
+
+    <header>
+    <h1>《杏林析微》药材柜</h1>
+    </header>
+
+<a href="/" class="home-btn text-decoration-none text-dark">
+    <i class="bi bi-house-door"></i> 返回首页
+</a>
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.9.1/font/bootstrap-icons.min.css">
+
+    <main>
+        <div class="cabinet-container">
+        <!-- 分类将通过JavaScript动态加载 -->
+        </div>
+    </main>
+
+<!-- 药材详情弹窗 -->
+<div id="medicine-modal" class="modal">
+        <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div class="medicine-header">
+            <h2 id="medicine-name"></h2>
+            <button id="favorite-btn" class="favorite-btn" onclick="toggleFavorite()">
+                <i id="favorite-icon" class="bi bi-heart"></i>
+                <span id="favorite-text">收藏</span>
+            </button>
+        </div>
+        <p class="category-info" id="medicine-category"></p>
+
+        <div class="medicine-image-container">
+            <div class="medicine-image" id="medicine-image"></div>
+            <p class="image-caption">药材图示</p>
+        </div>
+
+        <div class="medicine-details">
+            <p><strong>【来源】</strong><span id="medicine-source"></span></p>
+            <p><strong>【性味】</strong><span id="medicine-properties"></span></p>
+            <p><strong>【味道】</strong><span id="medicine-taste"></span></p>
+            <p><strong>【归经】</strong><span id="medicine-channels"></span></p>
+            <p><strong>【功效】</strong><span id="medicine-effects"></span></p>
+            <p><strong>【禁忌】</strong><span id="medicine-contraindications"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 获取DOM元素
+        const cabinetContainer = document.querySelector('.cabinet-container');
+        const modal = document.getElementById('medicine-modal');
+        const closeBtn = document.querySelector('.close-btn');
+
+        // 全局变量
+        let currentMedicine = null;
+        let authToken = localStorage.getItem('token');
+
+        // API请求工具函数
+        async function apiRequest(url, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            // 如果有token，添加到headers
+            if (authToken) {
+                defaultOptions.headers['Authorization'] = `Bearer ${authToken}`;
+            }
+
+            const mergedOptions = {
+                ...defaultOptions,
+                ...options,
+                headers: {
+                    ...defaultOptions.headers,
+                    ...(options.headers || {})
+                }
+            };
+
+            const response = await fetch(url, mergedOptions);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || '请求失败');
+            }
+
+            return data;
+        }
+
+        // 检查用户登录状态
+        function isLoggedIn() {
+            return authToken && authToken.trim() !== '';
+        }
+
+        // 检查药材收藏状态
+        async function checkFavoriteStatus(medicineId) {
+            if (!isLoggedIn()) {
+                return false;
+            }
+
+            try {
+                const response = await apiRequest(`/api/user/favorites/check/${medicineId}`);
+                return response.success ? response.data : false;
+            } catch (error) {
+                console.error('检查收藏状态失败:', error);
+                return false;
+            }
+        }
+
+        // 更新收藏按钮状态
+        function updateFavoriteButton(isFavorited) {
+            const favoriteBtn = document.getElementById('favorite-btn');
+            const favoriteIcon = document.getElementById('favorite-icon');
+            const favoriteText = document.getElementById('favorite-text');
+
+            if (isFavorited) {
+                favoriteBtn.classList.add('favorited');
+                favoriteIcon.className = 'bi bi-heart-fill';
+                favoriteText.textContent = '已收藏';
+            } else {
+                favoriteBtn.classList.remove('favorited');
+                favoriteIcon.className = 'bi bi-heart';
+                favoriteText.textContent = '收藏';
+            }
+        }
+
+        // 切换收藏状态
+        window.toggleFavorite = async function() {
+            if (!isLoggedIn()) {
+                alert('请先登录后再收藏药材');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            if (!currentMedicine) {
+                alert('无法获取药材信息');
+                return;
+            }
+
+            const favoriteBtn = document.getElementById('favorite-btn');
+            const isCurrentlyFavorited = favoriteBtn.classList.contains('favorited');
+
+            try {
+                favoriteBtn.disabled = true;
+                favoriteBtn.style.opacity = '0.6';
+
+                let response;
+                if (isCurrentlyFavorited) {
+                    // 取消收藏
+                    response = await apiRequest(`/api/user/favorites/${currentMedicine.medicineId}`, {
+                        method: 'DELETE'
+                    });
+                } else {
+                    // 添加收藏
+                    response = await apiRequest(`/api/user/favorites/${currentMedicine.medicineId}`, {
+                        method: 'POST'
+                    });
+                }
+
+                if (response.success) {
+                    updateFavoriteButton(!isCurrentlyFavorited);
+                    const message = isCurrentlyFavorited ? '取消收藏成功' : '收藏成功';
+                    
+                    // 显示成功提示（简单的临时提示）
+                    const toast = document.createElement('div');
+                    toast.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        background: #28a745;
+                        color: white;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        z-index: 10000;
+                        font-family: 'Ma Shan Zheng', cursive;
+                    `;
+                    toast.textContent = message;
+                    document.body.appendChild(toast);
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 2000);
+                } else {
+                    alert(response.message || '操作失败');
+                }
+            } catch (error) {
+                console.error('收藏操作失败:', error);
+                alert('操作失败: ' + error.message);
+            } finally {
+                favoriteBtn.disabled = false;
+                favoriteBtn.style.opacity = '1';
+            }
+        };
+
+        // 从服务器获取中药数据
+        fetch('/api/public/medicines')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('网络响应不正常');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('获取到的数据:', data); // 调试输出
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                loadMedicineCabinet(data);
+            })
+            .catch(error => {
+                console.error('获取中药数据失败:', error);
+                cabinetContainer.innerHTML = '<p style="text-align: center; color: #8B4513;">加载中药数据失败，请稍后重试</p>';
+            });
+
+        // 关闭模态框
+        closeBtn.addEventListener('click', function () {
+            modal.style.display = 'none';
+        });
+
+        // 点击模态框外部关闭
+        window.addEventListener('click', function (event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // 加载中药柜内容
+        function loadMedicineCabinet(data) {
+            try {
+                cabinetContainer.innerHTML = ''; // 清空容器
+
+                // 获取分类和药材数据 - 修复数据结构访问
+                const categories = data.data.categories;
+                const medicines = data.data.medicines;
+
+                console.log('分类数据:', categories); // 调试输出
+                console.log('药材数据:', medicines ? medicines.slice(0, 2) : null); // 调试输出
+
+                if (!categories || !medicines) {
+                    throw new Error('数据格式不正确');
+                }
+
+                // 为每个分类创建卡片
+                categories.forEach(category => {
+                    // 创建分类卡片
+                    const categoryCard = document.createElement('div');
+                    categoryCard.className = 'category-card';
+
+                    // 添加分类标题和描述
+                    const categoryTitle = document.createElement('h2');
+                    categoryTitle.className = 'category-title';
+                    categoryTitle.textContent = category.name;
+
+                    const categoryDesc = document.createElement('p');
+                    categoryDesc.className = 'category-description';
+
+                    // 创建药材网格容器
+                    const medicinesGrid = document.createElement('div');
+                    medicinesGrid.className = 'medicines-grid';
+
+                    // 获取该分类下的药材
+                    const categoryMedicines = medicines.filter(
+                        m => m.categoryId === category.id
+                    );
+
+                    console.log(`分类 ${category.name} 下的药材数量:`, categoryMedicines.length); // 调试输出
+
+                    // 为每种药材创建格子
+                    categoryMedicines.forEach(medicine => {
+                        const medicineItem = document.createElement('div');
+                        medicineItem.className = 'medicine-item';
+                        medicineItem.textContent = medicine.medicineName;
+
+                        // 点击药材显示详情
+                        medicineItem.addEventListener('click', function () {
+                            showMedicineDetails(medicine, category);
+                        });
+
+                        medicinesGrid.appendChild(medicineItem);
+                    });
+
+                    // 组装分类卡片
+                    categoryCard.appendChild(categoryTitle);
+                    categoryCard.appendChild(categoryDesc);
+                    categoryCard.appendChild(medicinesGrid);
+
+                    // 添加到中药柜容器
+                    cabinetContainer.appendChild(categoryCard);
+                });
+            } catch (error) {
+                console.error('加载中药柜失败:', error);
+                cabinetContainer.innerHTML = '<p style="text-align: center; color: #8B4513;">加载中药数据失败，请稍后重试</p>';
+            }
+        }
+
+        // 显示药材详情
+        async function showMedicineDetails(medicine, category) {
+            // 填充模态框内容
+            document.getElementById('medicine-name').textContent = medicine.medicineName;
+            document.getElementById('medicine-category').textContent = `【分类】${category.name}`;
+            document.getElementById('medicine-source').textContent = medicine.source || '暂无信息';
+            document.getElementById('medicine-properties').textContent = medicine.properties || '暂无信息';
+            document.getElementById('medicine-taste').textContent = medicine.taste || '暂无信息';
+            document.getElementById('medicine-channels').textContent = medicine.channels || '暂无信息';
+            document.getElementById('medicine-effects').textContent = medicine.effects || '暂无信息';
+            document.getElementById('medicine-contraindications').textContent = medicine.contraindications || '暂无信息';
+
+            // 设置药材图片
+            const medicineImage = document.getElementById('medicine-image');
+            medicineImage.textContent = medicine.medicineName;
+            if (medicine.imagePath) {
+                medicineImage.style.backgroundImage = `url(${medicine.imagePath})`;
+                medicineImage.style.backgroundSize = 'cover';
+                medicineImage.style.backgroundPosition = 'center';
+                medicineImage.textContent = '';
+            }
+
+            // 更新全局变量
+            currentMedicine = medicine;
+
+            // 检查收藏状态
+            const isFavorited = await checkFavoriteStatus(medicine.medicineId);
+            updateFavoriteButton(isFavorited);
+
+            // 显示模态框
+            modal.style.display = 'block';
+        }
+    });
+    </script>
+</body>
+</html> 

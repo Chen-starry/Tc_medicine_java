@@ -1,0 +1,2154 @@
+<!DOCTYPE html>
+<html lang="zh" data-theme="system">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.9.1/font/bootstrap-icons.min.css">
+    <title>智慧中医药科普平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ma Shan Zheng', cursive;
+            transition: background-color 0s, color 0s;
+        }
+
+        /* 主题变量 */
+        :root {
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --nav-bg: rgba(225, 198, 180, 0.9);
+            --nav-text: black;
+            --content-bg: rgba(255, 255, 255, 0.85);
+            --content-text: #333;
+            --icon-color: #333; /* 默认图标颜色 */
+            --footer-column-a: #4b3629;
+        }
+
+        html[data-theme="dark"] {
+            --bg-color: #222;
+            --text-color: #eee;
+            --nav-bg: rgba(158, 120, 105, 0.9);
+            --nav-text: #eee;
+            --content-bg: rgba(0, 0, 0, 0.7);
+            --content-text: #eee;
+            --icon-color: #fff; /* 暗色主题图标颜色 */
+            --footer-column-a: #eee;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            [data-theme="system"] {
+                --bg-color: #222;
+                --text-color: #eee;
+                --nav-bg: rgba(150, 100, 70, 0.9);
+                --nav-text: black;
+                --content-bg: rgba(0, 0, 0, 0.7);
+                --content-text: #eee;
+                --icon-color: #fff;
+            }
+        }
+
+        /* 全局样式 */
+        body {
+            background: url("/static/UI/bg_index.png") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column; /* 使用 flexbox 布局 */
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background-color: var(--nav-bg);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-container {
+            width: 90%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-left, .nav-right {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-links a, .nav-links span {
+            color: var(--nav-text);
+            text-decoration: none;
+            font-size: 20px;
+            transition: all 0.3s;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover, .nav-links span:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 主题选择器 */
+        .theme-selector {
+            position: relative;
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--nav-bg);
+            border-radius: 0 0 5px 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+            flex-direction: column;
+            min-width: 120px;
+            z-index: 100;
+        }
+
+        .theme-selector:hover .theme-options {
+            display: flex;
+        }
+
+        /* 图标规范 */
+        .nav-icon {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+        }
+
+        /* 主题图标 - 使用SVG的currentColor */
+        .theme-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+            color: var(--icon-color);
+        }
+
+        /* 主要内容 */
+        .main-content {
+            width: 80%;
+            margin: 50px auto;
+            text-align: center;
+            color: var(--content-text);
+            background-color: var(--content-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            flex: 1; /* 让主要内容占据剩余空间 */
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        /* 欢迎信息样式 */
+        .welcome-message {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 管理员下拉菜单样式 */
+        .admin-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .admin-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--nav-bg);
+            border-radius: 0 0 5px 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            min-width: 150px;
+            z-index: 100;
+            display: none;
+        }
+
+        .admin-dropdown:hover .admin-options {
+            display: block;
+        }
+
+        .admin-options a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 15px 10px;
+            color: var(--nav-text);
+            text-decoration: none;
+        }
+
+        .admin-options a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        footer {
+            background-color: var(--nav-bg);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-top: auto;
+        }
+
+
+        .footer-container {
+            width: 90%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+        }
+
+        .footer-column h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column a {
+            color: var(--footer-column-a);
+            text-decoration: none;
+            transition: opacity 0.3s;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+
+        .footer-column a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .footer-column p {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .footer-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 5px;
+            padding-bottom: 1px;
+            border-top: 1px solid rgba(139, 69, 19, 0.3);
+        }
+
+        /* 食疗卡片轮播样式 */
+        .content-container {
+            display: flex;
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        .food-carousel-container {
+            width: 50%;
+            padding-right: 15px;
+        }
+
+        .empty-space {
+            width: 50%;
+            padding-left: 15px;
+        }
+
+        .food-carousel {
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+            position: relative;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .food-carousel-inner {
+            display: flex;
+            transition: transform 0.5s ease;
+            height: 100%;
+        }
+
+        .food-card {
+            width: 100%;
+            height: 94%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: white;
+            flex-shrink: 0;
+            padding: 20px;
+            display: flex; /* 新增 */
+            flex-direction: column; /* 新增 */
+            justify-content: center; /* 新增：垂直居中 */
+            align-items: center; /* 新增：水平居中 */
+        }
+
+        .food-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .food-card-front {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* 新增：均匀分布内容 */
+        }
+
+        .food-card-image {
+            height: 200px; /* 固定高度 */
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .food-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* 修改为contain确保图片完整显示 */
+            border-radius: 8px;
+        }
+
+        .food-card-content {
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* 新增：内容垂直居中 */
+            align-items: center; /* 新增：内容水平居中 */
+            text-align: center; /* 新增：文本居中 */
+            width: 100%; /* 新增 */
+        }
+
+        .food-card-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: #1c1b1f;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+
+        .food-card-subtitle {
+            font-size: 14px;
+            color: #49454f;
+            margin-bottom: 12px;
+            font-weight: 400;
+            width: 100%;
+        }
+
+        .food-card-desc {
+            font-size: 14px;
+            color: #49454f;
+            line-height: 1.5;
+            flex-grow: 1;
+            margin-bottom: 15px; /* 新增 */
+            width: 100%; /* 新增 */
+            overflow: hidden; /* 新增 */
+            text-overflow: ellipsis; /* 新增 */
+            display: -webkit-box; /* 新增 */
+            -webkit-line-clamp: 3; /* 限制显示行数 */
+            -webkit-box-orient: vertical; /* 新增 */
+        }
+
+        .food-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid #e6e0e9;
+            width: 100%; /* 新增 */
+        }
+
+        .food-card-tag {
+            background-color: #e8def8;
+            color: #6750a4;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .food-card-button {
+            background-color: #6750a4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .food-card-button:hover {
+            background-color: #7c6ab8;
+        }
+
+        .food-prev, .food-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 10;
+            border-radius: 50%;
+        }
+
+        .food-prev {
+            left: 10px;
+        }
+
+        .food-next {
+            right: 10px;
+        }
+
+        /* 食谱弹出层样式 */
+        .food-recipe-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .food-recipe-popup {
+            width: 50%;
+            max-width: 600px;
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .food-recipe-popup h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .food-recipe-popup p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .food-recipe-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .food-recipe-close:hover {
+            color: #333;
+        }
+
+        /* 地图容器样式 */
+        .map-container {
+            width: 100%;
+            height: 500px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative; /* 这是关键，为绝对定位的子元素提供参照 */
+        }
+
+        #map {
+            height: 100vh;
+            background-color: transparent !important;
+        }
+
+        .infoBox {
+            position: absolute;
+            background: white;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 14px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            pointer-events: none; /* 确保信息框不会拦截鼠标事件 */
+            z-index: 9999; /* 确保信息框在顶部 */
+            display: none; /* 初始设置为不显示 */
+            color: #333; /* 浅色模式下的文字颜色 */
+        }
+
+        /* 深色模式下的infoBox样式 */
+        html[data-theme="dark"] .infoBox {
+            background: #333;
+            color: #eee;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        /* 系统主题跟随深色模式时的infoBox样式 */
+        @media (prefers-color-scheme: dark) {
+            [data-theme="system"] .infoBox {
+                background: #333;
+                color: #eee;
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        .Map_sheetNumber {
+            display: -ms-flexbox;
+            display: flex;
+            font-family: Avenir, serif;
+            font-size: 14px;
+            z-index: 10;
+            position: absolute;
+            bottom: 20px;
+            left: .938vw;
+            white-space: nowrap;
+            color: #000;
+            padding: 2px 15px;
+            background: #fff;
+        }
+
+        /* 深色模式下的Map_sheetNumber样式 */
+        html[data-theme="dark"] .Map_sheetNumber {
+            background: #333;
+            color: #eee;
+        }
+
+        /* 系统主题跟随深色模式时的Map_sheetNumber样式 */
+        @media (prefers-color-scheme: dark) {
+            [data-theme="system"] .Map_sheetNumber {
+                background: #333;
+                color: #eee;
+            }
+        }
+
+        /* 反馈模块样式 */
+        .feedback-section {
+            background-color: var(--nav-bg);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 100;
+            padding: 25px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .feedback-container {
+            width: 90%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .feedback-toggle {
+            background: none;
+            border: 2px solid var(--text-color);
+            color: var(--text-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 8px 25px;
+            border-radius: 30px;
+            font-size: 16px;
+        }
+
+        .feedback-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .feedback-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* 模态框样式 */
+        .feedback-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .header-section {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .modal-content {
+            background-color: var(--content-bg);
+            color: var(--content-text);
+            margin: 15% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 12px;
+            top: 12px;
+            font-size: 28px;
+            line-height: 1;
+            color: #666;
+            transition: color 0.3s;
+            z-index: 1;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        #contact {
+            height: 35px;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        #content {
+            height: 150px;
+            padding: 12px;
+            resize: none;
+        }
+
+        /* 通用输入框样式 */
+        .input-field {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 6px;
+            font-size: 14px;
+        }
+
+        .button-container {
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-top: auto;
+            text-align: right;
+        }
+
+        button[type="submit"] {
+            background-color: var(--nav-bg);
+            color: var(--nav-text);
+            padding: 16px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            float: right;
+            font-size: 18px;
+        }
+
+        /* 修改后的反馈模块样式 */
+        .feedback-column {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .left-column {
+            justify-content: flex-start;
+            min-width: 280px;
+        }
+
+        .middle-column {
+            justify-content: center;
+            max-width: 420px;
+        }
+
+        .right-column {
+            justify-content: flex-end;
+            min-width: 160px;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .highlight-text {
+            font-size: 18px;
+            color: #4b3629; /* 深棕色保持可读性 */
+            font-weight: 600;
+        }
+
+        .middle-column p {
+            font-size: 18px;
+            color: #5d4037; /* 中性棕色 */
+            line-height: 1.4;
+            margin: 0;
+        }
+
+
+        .feedback-toggle:hover {
+            background-color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .feedback-container {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .feedback-column {
+                width: 100%;
+                justify-content: center !important;
+            }
+
+            .left-column {
+                order: 1;
+            }
+
+            .middle-column {
+                order: 2;
+            }
+
+            .right-column {
+                order: 3;
+            }
+        }
+
+        /* 更新反馈模块主题变量 */
+        :root {
+            --feedback-bg: #D2DBC8; /* 指定蓝绿背景色 */
+            --feedback-text: #4b3629;
+            --feedback-border: #778899; /* 石板灰边框 */
+            --feedback-accent: #4b3629; /* 深苔藓绿强调色 */
+        }
+
+        html[data-theme="dark"] {
+            --feedback-bg: #3C5148; /* 深青石绿 */
+            --feedback-text: #E0EBE2; /* 珍珠白 */
+            --feedback-border: #5F7A6F; /* 冷杉绿 */
+            --feedback-accent: #E0EBE2; /* 灰绿强调色 */
+        }
+
+        /* 反馈模块容器 */
+        .feedback-section {
+            background: var(--feedback-bg);
+            padding: 25px 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        /* 文字层次优化 */
+        .highlight-text {
+            color: var(--feedback-accent);
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .brand-email {
+            color: var(--feedback-text);
+            font-size: 16px;
+            font-family: 'Helvetica Neue', sans-serif;
+        }
+
+        .middle-column p {
+            color: var(--feedback-text);
+            opacity: 0.9;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+
+        /* 按钮精致化 */
+        .feedback-toggle {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--feedback-border);
+            color: var(--feedback-accent);
+            padding: 8px 28px;
+            border-radius: 18px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .feedback-toggle:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: var(--feedback-accent);
+            box-shadow: 0 3px 8px rgba(85, 107, 47, 0.15);
+        }
+
+        /* 深色模式增强 */
+        html[data-theme="dark"] .feedback-section {
+            box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        html[data-theme="dark"] .feedback-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--feedback-accent);
+        }
+
+        html[data-theme="dark"] .feedback-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 中药创新产品展示区样式 - 修改版 */
+        .products-section {
+            width: 80%;
+            margin: 30px auto;
+                padding: 20px;
+            background-color: var(--content-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .products-title {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 30px;
+            color: var(--content-text);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .product-card {
+            background-color: var(--content-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            height: 300px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .product-card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .product-front, .product-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-front {
+            z-index: 2;
+        }
+
+        .product-back {
+            transform: rotateY(180deg);
+            padding: 15px;
+            background-color: var(--content-bg);
+            overflow-y: auto;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .product-info {
+            padding: 15px;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .product-name {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: var(--content-text);
+        }
+
+        .product-desc {
+            font-size: 14px;
+            color: var(--content-text);
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        .product-details {
+            font-size: 14px;
+            color: var(--content-text);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .product-benefits {
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--content-text);
+            opacity: 0.9;
+        }
+
+        .product-benefits li {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .product-card {
+                height: auto;
+                min-height: 300px;
+            }
+        }
+
+        /* 新增产品详情弹出层样式 */
+        .product-detail-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--content-bg);
+            z-index: 10;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .product-detail-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--content-text);
+        }
+
+        .product-detail-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-detail-image {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        .product-detail-name {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: var(--content-text);
+        }
+
+        .product-detail-desc {
+            font-size: 16px;
+            color: var(--content-text);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .product-detail-benefits {
+            margin-top: auto;
+            font-size: 14px;
+            color: var(--content-text);
+        }
+
+        .product-detail-benefits li {
+            margin-bottom: 8px;
+        }
+
+        /* 中医六艺 */
+        .tcm-arts-container {
+            width: 80%;
+            margin: 50px auto;
+            padding: 20px 0;
+            position: relative;
+            height: 650px;
+            overflow: visible;
+            background-color: var(--content-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex; /* 新增 */
+            flex-direction: column; /* 新增 */
+            align-items: center; /* 新增：水平居中 */
+        }
+
+        .tcm-arts-stack {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            perspective: 1000px;
+            transform: translateX(0); /* 新增：重置水平位置 */
+        }
+
+        .tcm-art-card {
+            position: absolute;
+            width: 280px;
+            height: 400px;
+            background-color: #f8f1e9;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.5s ease;
+            transform-origin: center;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            backface-visibility: hidden;
+            left: 50%;
+            margin-left: -140px;
+            padding: 0;
+        }
+
+        /* 增大横向间距 - 从220px到-220px */
+        .tcm-art-card:nth-child(1) {
+            transform: translateX(-220px) translateY(0) rotate(-8deg);
+            z-index: 7;
+        }
+
+        .tcm-art-card:nth-child(2) {
+            transform: translateX(-147px) translateY(25px) rotate(-5deg);
+            z-index: 6;
+        }
+
+        .tcm-art-card:nth-child(3) {
+            transform: translateX(-73px) translateY(50px) rotate(-2deg);
+            z-index: 5;
+        }
+
+        .tcm-art-card:nth-child(4) {
+            transform: translateX(0) translateY(75px) rotate(0deg);
+            z-index: 4;
+        }
+
+        .tcm-art-card:nth-child(5) {
+            transform: translateX(73px) translateY(100px) rotate(2deg);
+            z-index: 3;
+        }
+
+        .tcm-art-card:nth-child(6) {
+            transform: translateX(147px) translateY(125px) rotate(5deg);
+            z-index: 2;
+        }
+
+        .tcm-art-card:nth-child(7) {
+            transform: translateX(220px) translateY(150px) rotate(8deg);
+            z-index: 1;
+        }
+
+        .tcm-art-card.expanded {
+            transform: translateX(0) translateY(-80px) scale(1.3) !important;
+            z-index: 10;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        /* 响应式设计 - 增大移动端间距 */
+        @media (max-width: 768px) {
+            .tcm-arts-container {
+                height: 500px;
+            }
+
+            .tcm-art-card {
+                width: 150px;
+                height: 220px;
+                margin-left: -75px;
+            }
+
+            /* 移动端横向间距增大到160px */
+            .tcm-art-card:nth-child(1) {
+                transform: translateX(-160px) translateY(0) rotate(-10deg);
+            }
+
+            .tcm-art-card:nth-child(2) {
+                transform: translateX(-107px) translateY(20px) rotate(-7deg);
+            }
+
+            .tcm-art-card:nth-child(3) {
+                transform: translateX(-53px) translateY(40px) rotate(-3deg);
+            }
+
+            .tcm-art-card:nth-child(4) {
+                transform: translateX(0) translateY(60px) rotate(0deg);
+            }
+
+            .tcm-art-card:nth-child(5) {
+                transform: translateX(53px) translateY(80px) rotate(3deg);
+            }
+
+            .tcm-art-card:nth-child(6) {
+                transform: translateX(107px) translateY(100px) rotate(7deg);
+            }
+
+            .tcm-art-card:nth-child(7) {
+                transform: translateX(160px) translateY(120px) rotate(10deg);
+            }
+
+            .tcm-art-card.expanded {
+                transform: translateX(0) translateY(-40px) scale(1.2) !important;
+            }
+        }
+
+        .art-title {
+            font-size: 28px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left nav-links">
+            <a href="/medicine">
+                <svg class="nav-icon theme-icon" viewBox="0 0 24 24">
+                    <path d="M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M12,19A7,7 0 0,1 5,12A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19Z"/>
+                </svg>
+                药材
+            </a>
+            <a href="/diseases">
+                <svg class="nav-icon theme-icon" viewBox="0 0 24 24">
+                    <path d="M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M12,19A7,7 0 0,1 5,12A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19Z"/>
+                </svg>
+                疾病
+            </a>
+            <a href="/diagnosis">
+                <svg class="nav-icon theme-icon" viewBox="0 0 24 24">
+                    <path d="M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M12,19A7,7 0 0,1 5,12A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19Z"/>
+                </svg>
+                AI问诊
+            </a>
+            <a href="/predict">
+                <svg class="nav-icon theme-icon" viewBox="0 0 24 24">
+                    <path d="M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M12,19A7,7 0 0,1 5,12A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19Z"/>
+                </svg>
+                药材识别
+                </a>
+            </div>
+            
+        <div class="nav-center">
+            <div class="theme-selector nav-links">
+                    <span class="theme-toggle">
+                        <svg class="nav-icon theme-icon" viewBox="0 0 24 24">
+                            <path d="M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M12,19A7,7 0 0,1 5,12A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19Z"/>
+                        </svg>
+                        主题
+                    </span>
+                    <div class="theme-options">
+                        <span data-theme="system">
+                            <svg class="nav-icon theme-icon" viewBox="0 0 24 24">
+                                <path d="M4,3H20A1,1 0 0,1 21,4V20A1,1 0 0,1 20,21H4A1,1 0 0,1 3,20V4A1,1 0 0,1 4,3M5,5V19H19V5H5Z"/>
+                            </svg>
+                            默认
+                        </span>
+                    <span data-theme="light">
+                            <svg class="nav-icon theme-icon" viewBox="0 0 24 24">
+                                <path d="M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,2L14.39,5.42C13.65,5.15 12.84,5 12,5C11.16,5 10.35,5.15 9.61,5.42L12,2M3.34,7L7.5,6.65C6.9,7.16 6.36,7.78 5.94,8.5C5.5,9.24 5.25,10 5.11,10.79L3.34,7M3.36,17L5.12,13.23C5.26,14 5.53,14.78 5.95,15.5C6.37,16.24 6.91,16.86 7.5,17.37L3.36,17M20.65,7L18.88,10.79C18.74,10 18.47,9.23 18.05,8.5C17.63,7.78 17.1,7.15 16.5,6.64L20.65,7M20.64,17L16.5,17.36C17.09,16.85 17.62,16.22 18.04,15.5C18.46,14.77 18.73,14 18.87,13.21L20.64,17M12,22L9.59,18.56C10.33,18.83 11.14,19 12,19C12.82,19 13.63,18.83 14.37,18.56L12,22Z"/>
+                            </svg>
+                            浅色
+                        </span>
+                    <span data-theme="dark">
+                            <svg class="nav-icon theme-icon" viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                      d="M12,18C11.11,18 10.26,17.8 9.5,17.45C11.56,16.5 13,14.42 13,12C13,9.58 11.56,7.5 9.5,6.55C10.26,6.2 11.11,6 12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31L23.31,12L20,8.69Z"/>
+                            </svg>
+                            深色
+                        </span>
+                    </div>
+                </div>
+        </div>
+
+        <div class="nav-right nav-links">
+            <!-- 未登录时显示的部分 -->
+            <div id="guest-view">
+                <a href="/login">
+                    <svg class="nav-icon theme-icon" viewBox="0 0 24 24">
+                        <path d="M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M12,19A7,7 0 0,1 5,12A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19Z"/>
+                    </svg>
+                    登录
+                </a>
+                <a href="/register">
+                    <svg class="nav-icon theme-icon" viewBox="0 0 24 24">
+                        <path d="M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M12,19A7,7 0 0,1 5,12A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19Z"/>
+                    </svg>
+                    注册
+                </a>
+            </div>
+
+            <!-- 登录后显示的部分 -->
+            <div id="user-view" style="display: none;">
+
+                <div class="admin-dropdown">
+    <span class="welcome-message">
+        <svg class="nav-icon theme-icon" viewBox="0 0 24 24">
+            <path d="M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M12,19A7,7 0 0,1 5,12A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19Z"/>
+        </svg>
+        你好, <span id="username-display"></span>
+    </span>
+                    <div class="admin-options" id="dashboard-options">
+                        <!-- 管理员后台选项 -->
+                        <a href="/dashboard" id="admin-dashboard-link" style="display: none;">
+                            <svg class="nav-icon theme-icon" viewBox="0 0 24 24">
+                                <path d="M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M12,19A7,7 0 0,1 5,12A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19Z"/>
+                            </svg>
+                            管理员后台
+                        </a>
+                        <!-- 用户后台选项 -->
+                        <a href="/user-dashboard.html" id="user-dashboard-link" style="display: none;">
+                            <svg class="nav-icon theme-icon" viewBox="0 0 24 24">
+                                <path d="M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M12,19A7,7 0 0,1 5,12A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19Z"/>
+                            </svg>
+                            用户后台
+                        </a>
+                    </div>
+                </div>
+                <a href="/logout" id="logout-btn" style="margin-left: 20px;">
+                    <svg class="nav-icon theme-icon" viewBox="0 0 24 24">
+                        <path d="M16,17V14H9V10H16V7L21,12L16,17M14,2A2,2 0 0,1 16,4V6H14V4H5V20H14V18H16V20A2,2 0 0,1 14,22H5A2,2 0 0,1 3,20V4A2,2 0 0,1 5,2H14Z"/>
+                    </svg>
+                    退出
+                </a>
+            </div>
+
+            <script>
+                document.getElementById('logout-btn').addEventListener('click', function (e) {
+                    e.preventDefault();
+                    localStorage.removeItem('username');
+                    window.location.href = '/logout';
+                });
+            </script>
+            </div>
+        </div>
+    </nav>
+
+<div class="main-content">
+    <h1>杏林析微</h1>
+    <p>诸药所生，皆有境界</p>
+    <p>草木有灵，人间有情，相逢则境界生</p>
+    <!-- 食疗卡片轮播和空白区域 -->
+    <div class="content-container">
+        <div class="food-carousel-container">
+            <div class="food-carousel">
+                <h2>药食同源</h2>
+                <div class="food-carousel-inner">
+                    <!-- 卡片1：枸杞 -->
+                    <div class="food-card">
+                        <div class="food-card-front">
+                            <div class="food-card-image">
+                                <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/card/gouqi.jpg"
+                                     alt="枸杞明目茶">
+                            </div>
+                            <div class="food-card-content">
+                                <h3 class="food-card-title">枸杞明目茶</h3>
+                                <p class="food-card-subtitle">滋补肝肾，益精明目</p>
+                                <p class="food-card-desc">
+                                    枸杞富含胡萝卜素、维生素A等营养素，与菊花搭配可缓解眼疲劳，适合长期用眼人群饮用。</p>
+                                <div class="food-card-footer">
+                                    <span class="food-card-tag">肝肾同补</span>
+                                    <button class="food-card-button" onclick="showFoodRecipe(1)">查看配方</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 卡片2：山药 -->
+                    <div class="food-card">
+                        <div class="food-card-front">
+                            <div class="food-card-image">
+                                <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/card/shanyao.jpg"
+                                     alt="山药养胃粥">
+                            </div>
+                            <div class="food-card-content">
+                                <h3 class="food-card-title">山药养胃粥</h3>
+                                <p class="food-card-subtitle">健脾益胃，补肺益肾</p>
+                                <p class="food-card-desc">
+                                    山药含有丰富淀粉酶、多酚氧化酶等物质，与粳米同煮可健脾养胃，适合脾胃虚弱者食用。</p>
+                                <div class="food-card-footer">
+                                    <span class="food-card-tag">脾胃调理</span>
+                                    <button class="food-card-button" onclick="showFoodRecipe(2)">查看配方</button>
+                                </div>
+                            </div>
+                        </div>
+            </div>
+            
+                    <!-- 卡片3：红枣 -->
+                    <div class="food-card">
+                        <div class="food-card-front">
+                            <div class="food-card-image">
+                                <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/card/hongzao.jpg"
+                                     alt="红枣补血汤">
+                            </div>
+                            <div class="food-card-content">
+                                <h3 class="food-card-title">红枣补血汤</h3>
+                                <p class="food-card-subtitle">补中益气，养血安神</p>
+                                <p class="food-card-desc">
+                                    红枣富含铁元素和环磷酸腺苷，与桂圆、枸杞搭配可改善贫血症状，适合气血不足者。</p>
+                                <div class="food-card-footer">
+                                    <span class="food-card-tag">气血双补</span>
+                                    <button class="food-card-button" onclick="showFoodRecipe(3)">查看配方</button>
+                                </div>
+                            </div>
+                        </div>
+            </div>
+            
+                    <!-- 卡片4：薏米 -->
+                    <div class="food-card">
+                        <div class="food-card-front">
+                            <div class="food-card-image">
+                                <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/card/yimi.jpg"
+                                     alt="薏米祛湿饮">
+                            </div>
+                            <div class="food-card-content">
+                                <h3 class="food-card-title">薏米祛湿饮</h3>
+                                <p class="food-card-subtitle">利水渗湿，健脾止泻</p>
+                                <p class="food-card-desc">
+                                    薏米含有薏苡仁油和薏苡素，与赤小豆同煮可祛湿利尿，适合湿气重、水肿人群。</p>
+                                <div class="food-card-footer">
+                                    <span class="food-card-tag">祛湿健脾</span>
+                                    <button class="food-card-button" onclick="showFoodRecipe(4)">查看配方</button>
+                                </div>
+                            </div>
+                        </div>
+            </div>
+            
+                    <!-- 卡片5：银耳 -->
+                    <div class="food-card">
+                        <div class="food-card-front">
+                            <div class="food-card-image">
+                                <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/card/yiner.jpg"
+                                     alt="银耳润肺羹">
+                            </div>
+                            <div class="food-card-content">
+                                <h3 class="food-card-title">银耳润肺羹</h3>
+                                <p class="food-card-subtitle">滋阴润肺，养胃生津</p>
+                                <p class="food-card-desc">
+                                    银耳富含银耳多糖和胶质，与百合、莲子同炖可润肺止咳，适合秋冬季干燥季节食用。</p>
+                                <div class="food-card-footer">
+                                    <span class="food-card-tag">润肺滋阴</span>
+                                    <button class="food-card-button" onclick="showFoodRecipe(5)">查看配方</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="food-prev" onclick="prevFoodSlide()">❮</button>
+                <button class="food-next" onclick="nextFoodSlide()">❯</button>
+            </div>
+        </div>
+
+        <!--地图-->
+        <div class="map-container" id="herb-map">
+            <h2>中国草药分布图</h2>
+            <div id="map"></div>
+            <div class="Map_sheetNumber">审图号：GS（2024）0650号</div>
+            <div class="infoBox" id="infoBox"></div>
+
+            <script>
+                const map = L.map('map', {
+                    center: [35.8617, 104.1954],  // 中国的中心点
+                    zoom: 4,                      // 初始缩放级别
+                    minZoom: 4,                   // 最小缩放级别
+                    maxZoom: 10                   // 最大缩放级别
+                });
+
+                // 设置为完全空白背景
+                map.setZoom(4);
+                map.setView([26, 104.1954], 4);
+
+                // 使用空白的地图背景
+                L.tileLayer('data:image/png;base64,', {   // 无瓦片数据（空白）
+                    attribution: ''
+                }).addTo(map);
+
+                const infoBox = document.getElementById('infoBox');
+
+                fetch('/china_provinces.geojson')
+                    .then(res => res.json())
+                    .then(data => {
+                        function style(feature) {
+                            return {
+                                fillColor: '#E9DD9F',  // 区域填充颜色
+                                weight: 1,
+                                opacity: 1,
+                                color: '#EBC76D',         // 边界颜色
+                                fillOpacity: 0.6
+                            };
+                        }
+
+                        function onEachFeature(feature, layer) {
+                            layer.on({
+                                mouseover: function (e) {
+                                    // 显示信息框
+                                    infoBox.style.display = 'block';
+
+                                    // 高亮该区域
+                                    e.target.setStyle({
+                                        fillColor: '#97C881',
+                                        weight: 3,
+                                        color: '#666',
+                                        fillOpacity: 0.8
+                                    });
+
+                                    // 获取区域名称
+                                    const name = feature.properties.name || '未知区域';
+                                    infoBox.innerHTML = `${name}`;
+
+                                    // 获取鼠标位置并更新信息框位置
+                                    const latlng = e.latlng;
+                                    const offsetX = 10;  // 信息框与鼠标的水平偏移量
+                                    const offsetY = 10;  // 信息框与鼠标的垂直偏移量（紧挨鼠标）
+
+                                    // 更新信息框位置
+                                    const mapPoint = map.latLngToContainerPoint(latlng);
+                                    infoBox.style.left = `${mapPoint.x + offsetX}px`;
+                                    infoBox.style.top = `${mapPoint.y + offsetY}px`;
+                                },
+                                mouseout: function (e) {
+                                    // 隐藏信息框
+                                    infoBox.style.display = 'none';
+
+                                    // 恢复区域的原始样式
+                                    geojson.resetStyle(e.target);
+                                },
+                                click: function (e) {
+                                    // 点击时地图放大至该区域
+                                    map.fitBounds(e.target.getBounds());
+                                }
+                            });
+                        }
+
+                        const geojson = L.geoJson(data, {
+                            style: style,
+                            onEachFeature: onEachFeature
+                        }).addTo(map);
+                    });
+            </script>
+                </div>
+                </div>
+                </div>
+
+<!-- 食谱弹出层 -->
+<div class="food-recipe-overlay" id="food-recipe-overlay">
+    <div class="food-recipe-popup">
+        <span class="food-recipe-close" onclick="closeFoodRecipe()">×</span>
+        <h3 id="food-recipe-title">食谱标题</h3>
+        <p id="food-recipe-materials">材料：</p>
+        <p id="food-recipe-method">做法：</p>
+    </div>
+</div>
+<!-- 中药创新产品展示区 -->
+<div class="products-section">
+    <h2 class="products-title">"中药+"</h2>
+
+    <div class="products-grid">
+        <!-- 卡片1：中药奶茶 -->
+        <div class="product-card" data-product="tea">
+            <div class="product-front">
+                <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/jiehe/naicha.jpg" alt="中药奶茶"
+                     class="product-image">
+                <div class="product-info">
+                    <h3 class="product-name">中药奶茶</h3>
+                    <p class="product-desc">
+                        融合枸杞、菊花等药食同源草本，以低温萃取保留活性成分，打造"轻养生"茶饮，平衡传统药效与现代口感。</p>
+                </div>
+            </div>
+            <div class="product-detail-overlay">
+                <span class="product-detail-close">×</span>
+                <div class="product-detail-content">
+                    <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/jiehe/naicha.jpg" alt="中药奶茶"
+                         class="product-detail-image">
+                    <h3 class="product-detail-name">中药奶茶</h3>
+                    <p class="product-detail-desc">
+                        精选枸杞、菊花、罗汉果等中药材，搭配优质奶源，打造健康饮品新选择。采用低温萃取工艺保留药材有效成分，含茶多酚和多种维生素。</p>
+                    <ul class="product-detail-benefits">
+                        <li>清肝明目，缓解眼疲劳</li>
+                        <li>低糖低卡，健康无负担</li>
+                        <li>传统配方，现代工艺</li>
+                        <li>适合长期用眼人群</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 卡片2：中药面包 -->
+        <div class="product-card" data-product="bread">
+            <div class="product-front">
+                <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/jiehe/mianbao.jpg" alt="中药面包"
+                     class="product-image">
+                <div class="product-info">
+                    <h3 class="product-name">中药面包</h3>
+                    <p class="product-desc">将茯苓、山药等健脾药材融入发酵工艺，开发无添加功能性烘焙，实现"早餐药膳化"。</p>
+            </div>
+        </div>
+            <div class="product-detail-overlay">
+                <span class="product-detail-close">×</span>
+                <div class="product-detail-content">
+                    <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/jiehe/mianbao.jpg" alt="中药面包"
+                         class="product-detail-image">
+                    <h3 class="product-detail-name">中药面包</h3>
+                    <p class="product-detail-desc">
+                        采用药食同源理念，将茯苓、山药、芡实等融入面包制作，营养更丰富。使用天然酵母发酵，不含人工添加剂。</p>
+                    <ul class="product-detail-benefits">
+                        <li>健脾养胃，助消化</li>
+                        <li>无添加，纯天然</li>
+                        <li>适合各类人群</li>
+                        <li>儿童营养早餐优选</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 卡片3：中药火锅 -->
+        <div class="product-card" data-product="hotpot">
+            <div class="product-front">
+                <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/jiehe/huoguo.jpg" alt="中药火锅"
+                     class="product-image">
+                <div class="product-info">
+                    <h3 class="product-name">中药火锅</h3>
+                    <p class="product-desc">以当归、黄芪等入汤底，结合现代风味科学降低药味，打造四季皆宜的"滋补型"火锅。</p>
+                </div>
+            </div>
+            <div class="product-detail-overlay">
+                <span class="product-detail-close">×</span>
+                <div class="product-detail-content">
+                    <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/jiehe/huoguo.jpg" alt="中药火锅"
+                         class="product-detail-image">
+                    <h3 class="product-detail-name">中药火锅</h3>
+                    <p class="product-detail-desc">
+                        以当归、黄芪、枸杞等二十余味中药材熬制，滋补不上火，四季皆宜。底料经8小时文火慢炖，充分释放药材精华。</p>
+                    <ul class="product-detail-benefits">
+                        <li>温补不上火</li>
+                        <li>增强免疫力</li>
+                        <li>适合家庭聚餐</li>
+                        <li>冬季养生首选</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 卡片4：中药口红 -->
+        <div class="product-card" data-product="lipstick">
+            <div class="product-front">
+                <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/jiehe/yaozao.jpg" alt="中药皂"
+                     class="product-image">
+                <div class="product-info">
+                    <h3 class="product-name">中药皂</h3>
+                    <p class="product-desc">萃取艾草、金银花等抗菌成分，开发pH5.5弱酸性洁肤皂，兼顾清洁与肌肤调理功能。</p>
+                </div>
+            </div>
+            <div class="product-detail-overlay">
+                <span class="product-detail-close">×</span>
+                <div class="product-detail-content">
+                    <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/jiehe/yaozao.jpg" alt="中药皂"
+                         class="product-detail-image">
+                    <h3 class="product-detail-name">中药皂</h3>
+                    <p class="product-detail-desc">
+                        精选艾草、金银花等天然草本精华，结合传统冷制皂工艺，打造温和清洁不刺激的养肤皂。不含化学添加剂，保留植物活性成分。</p>
+                    <ul class="product-detail-benefits">
+                        <li>天然抗菌：艾草+金银花双重抗菌成分</li>
+                        <li>舒缓修复：甘草精华缓解肌肤敏感</li>
+                        <li>温和清洁：pH5.5弱酸性配方</li>
+                        <li>四季适用：适合全家日常使用</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 卡片5：中药香囊 -->
+        <div class="product-card" data-product="sachet">
+            <div class="product-front">
+                <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/jiehe/xiangnang.jpg" alt="中药香囊"
+                     class="product-image">
+                <div class="product-info">
+                    <h3 class="product-name">中药香囊</h3>
+                    <p class="product-desc">结合芳香疗法与驱蚊药材，开发车载、衣柜等多场景应用产品，升级传统香囊实用性。</p>
+                </div>
+            </div>
+            <div class="product-detail-overlay">
+                <span class="product-detail-close">×</span>
+                <div class="product-detail-content">
+                    <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/jiehe/xiangnang.jpg" alt="中药香囊"
+                         class="product-detail-image">
+                    <h3 class="product-detail-name">中药香囊</h3>
+                    <p class="product-detail-desc">
+                        根据古法配方，选用艾叶、藿香、薄荷等药材，纯手工制作，天然无刺激。香气可持续2-3个月。</p>
+                    <ul class="product-detail-benefits">
+                        <li>驱蚊防虫效果显著</li>
+                        <li>安神助眠</li>
+                        <li>可悬挂或随身携带</li>
+                        <li>儿童房专用配方</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 卡片6：中药面膜 -->
+        <div class="product-card" data-product="mask">
+            <div class="product-front">
+                <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/jiehe/mianmo.jpg" alt="中药面膜"
+                     class="product-image">
+                <div class="product-info">
+                    <h3 class="product-name">中药面膜</h3>
+                    <p class="product-desc">复配七白粉与透明质酸，采用冻干技术保留活性，实现"外敷内调"的美容方案。</p>
+                </div>
+            </div>
+            <div class="product-detail-overlay">
+                <span class="product-detail-close">×</span>
+                <div class="product-detail-content">
+                    <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/jiehe/mianmo.jpg" alt="中药面膜"
+                         class="product-detail-image">
+                    <h3 class="product-detail-name">中药面膜</h3>
+                    <p class="product-detail-desc">
+                        传承古代七白方，精选白芷、白茯苓、白术等七种美白药材，天然安全。添加透明质酸增强保湿效果。</p>
+                    <ul class="product-detail-benefits">
+                        <li>改善暗沉，提亮肤色</li>
+                        <li>温和不刺激</li>
+                        <li>适合各种肤质</li>
+                        <li>敏感肌专用配方</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 中医六艺-->
+<div class="tcm-arts-container">
+    <h2 class="art-title">中医六艺</h2>
+    <div class="tcm-arts-stack">
+        <!-- 卡片1 -->
+        <div class="tcm-art-card" data-art="acupuncture">
+            <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/liuyi/liuyi0.jpg" alt="针灸"
+                 class="tcm-art-image">
+        </div>
+
+        <!-- 卡片2 -->
+        <div class="tcm-art-card" data-art="moxibustion">
+            <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/liuyi/liuyi1.jpg" alt="艾灸"
+                 class="tcm-art-image">
+        </div>
+
+        <!-- 卡片3: 推拿 -->
+        <div class="tcm-art-card" data-art="tuina">
+            <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/liuyi/liuyi2.jpg" alt="推拿"
+                 class="tcm-art-image">
+        </div>
+
+        <!-- 卡片4: 拔罐 -->
+        <div class="tcm-art-card" data-art="cupping">
+            <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/liuyi/liuyi3.jpg" alt="拔罐"
+                 class="tcm-art-image">
+        </div>
+
+        <!-- 卡片5: 刮痧 -->
+        <div class="tcm-art-card" data-art="guasha">
+            <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/liuyi/liuyi4.jpg" alt="刮痧"
+                 class="tcm-art-image">
+        </div>
+
+        <!-- 卡片6: 中药 -->
+        <div class="tcm-art-card" data-art="herbs">
+            <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/liuyi/liuyi5.jpg" alt="中药"
+                 class="tcm-art-image">
+        </div>
+
+        <!-- 卡片7: 中药 -->
+        <div class="tcm-art-card" data-art="herbs">
+            <img src="https://fhy-tc-medicine.oss-cn-beijing.aliyuncs.com/liuyi/liuyi6.jpg" alt="中药"
+                 class="tcm-art-image">
+        </div>
+    </div>
+</div>
+
+<!-- 反馈模块 -->
+<section class="feedback-section">
+    <div class="feedback-container">
+        <div class="feedback-column left-column">
+            <div class="contact-info">
+                <span class="highlight-text">有问题？要反馈？</span>
+                <span class="brand-email">2224240962@henu.edu.cn</span>
+            </div>
+        </div>
+        <div class="feedback-column middle-column">
+            <p>联系我们并且提交反馈，我们会悉心听取您的意见！</p>
+        </div>
+        <div class="feedback-column right-column">
+            <button class="feedback-toggle">
+                <svg class="feedback-icon" viewBox="0 0 24 24">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm-3 12H7v-2h10v2zm0-3H7V9h10v2zm0-3H7V6h10v2z"/>
+                </svg>
+                提交反馈 →
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- 新增反馈模态框 -->
+<div class="feedback-modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div class="header-section">
+            <h3 class="feedback-title">用户反馈</h3>
+        </div>
+
+        <form id="feedbackForm">
+            <!-- 输入框容器 -->
+            <div class="input-container">
+                <div class="form-group">
+                    <label>联系方式：</label>
+                    <input type="text" id="contact" name="contact" required
+                           placeholder="请输入手机/邮箱" class="input-field">
+                </div>
+                <div class="form-group">
+                    <label>反馈内容：</label>
+                    <textarea id="content" name="content" required
+                              placeholder="请输入您的建议或问题" class="input-field"></textarea>
+                </div>
+
+            </div>
+
+            <!-- 按钮容器 -->
+
+            <button type="submit" class="submit-btn">提交反馈</button>
+        </form>
+
+
+    </div>
+</div>
+
+
+<footer>
+    <div class="footer-container">
+        <div class="footer-column">
+            <h3>友情链接</h3>
+            <ul>
+                <li><a href="https://zhongyibaike.com/wiki/%E4%B8%AD%E8%8D%AF" target="_blank">中医百科</a></li>
+                <li><a href="https://zhongyibaodian.com/" target="_blank">中医宝典</a></li>
+                <li><a href="https://www.zycankao.com/index" target="_blank">中医参考</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-column">
+            <h3>联系我们</h3>
+            <ul>
+                <li>地址：河南大学郑州校区</li>
+                <li>电话：19513201850</li>
+            </ul>
+        </div>
+
+        <div class="footer-column">
+            <h3>便捷通道</h3>
+            <ul>
+                <li><a href="/diseases">查看疾病百科</a></li>
+                <li><a href="/medicine">我要查找药材</a></li>
+                <li><a href="/diagnosis">AI问诊</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-column">
+            <h3>网站理念</h3>
+            <p>
+                "杏林析微"承岐黄精诚，以数字解构经络智慧，将千年草木灵韵融入现代诊疗。析微见真，守护健康日常；匠心传承，点亮生命本真。指尖轻触间，传统智慧润泽未来。</p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 杏林析微. 保留所有权利.</p>
+    </div>
+</footer>
+
+    <script>
+        // 主题切换功能
+    const themeOptions = document.querySelectorAll('.theme-options span');
+    const currentTheme = localStorage.getItem('theme') || 'system';
+
+    // 应用保存的主题
+    document.documentElement.setAttribute('data-theme', currentTheme);
+
+    // 设置主题选项点击事件
+    themeOptions.forEach(option => {
+        option.addEventListener('click', (e) => {
+            const theme = option.getAttribute('data-theme');
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        });
+    });
+
+    // 监听系统主题变化
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (localStorage.getItem('theme') === 'system' || !localStorage.getItem('theme')) {
+            document.documentElement.setAttribute('data-theme', 'system');
+        }
+    });
+
+    // 检查登录状态并更新导航栏
+    // 更新导航栏函数
+    // index.html
+    function updateNavbar() {
+        const username = localStorage.getItem('username');
+        const userType = localStorage.getItem('userType');
+        const guestView = document.getElementById('guest-view');
+        const userView = document.getElementById('user-view');
+        const usernameDisplay = document.getElementById('username-display');
+        const adminDashboardLink = document.getElementById('admin-dashboard-link');
+        const userDashboardLink = document.getElementById('user-dashboard-link');
+        const dashboardOptions = document.getElementById('dashboard-options');
+
+        if (username) {
+            guestView.style.display = 'none';
+            userView.style.display = 'flex';
+            usernameDisplay.textContent = username;
+
+            // 根据用户类型显示对应的后台入口
+            if (userType === '1') {
+                // 管理员用户：显示管理员后台
+                adminDashboardLink.style.display = 'flex';
+                userDashboardLink.style.display = 'none';
+            } else {
+                // 普通用户：显示用户后台
+                adminDashboardLink.style.display = 'none';
+                userDashboardLink.style.display = 'flex';
+            }
+            // 移除强制显示下拉菜单的代码，让CSS hover效果控制显示隐藏
+        } else {
+            guestView.style.display = 'flex';
+            userView.style.display = 'none';
+        }
+    }
+
+    // 页面加载时检查登录状态
+    document.addEventListener('DOMContentLoaded', updateNavbar);
+
+    // 监听存储变化以同步多个标签页
+    window.addEventListener('storage', updateNavbar);
+
+    // 食疗卡片轮播功能
+    let foodSlideIndex = 0;
+    let foodSlideInterval;
+    const foodSlides = document.querySelectorAll('.food-card');
+    const foodCarouselInner = document.querySelector('.food-carousel-inner');
+    const foodRecipeOverlay = document.getElementById('food-recipe-overlay');
+    let isRecipeOpen = false;
+
+    // 初始化轮播
+    function initFoodCarousel() {
+        updateFoodCarousel();
+        startFoodCarousel();
+    }
+
+    // 更新轮播位置
+    function updateFoodCarousel() {
+        const slideWidth = foodSlides[0].offsetWidth;
+        foodCarouselInner.style.transform = `translateX(-${foodSlideIndex * slideWidth}px)`;
+    }
+
+    // 开始自动轮播
+    function startFoodCarousel() {
+        if (!isRecipeOpen) {
+            foodSlideInterval = setInterval(() => {
+                nextFoodSlide();
+            }, 3000);
+        }
+    }
+
+    // 停止自动轮播
+    function stopFoodCarousel() {
+        clearInterval(foodSlideInterval);
+    }
+
+    // 下一张卡片
+    function nextFoodSlide() {
+        foodSlideIndex = (foodSlideIndex + 1) % foodSlides.length;
+        updateFoodCarousel();
+    }
+
+    // 上一张卡片
+    function prevFoodSlide() {
+        foodSlideIndex = (foodSlideIndex - 1 + foodSlides.length) % foodSlides.length;
+        updateFoodCarousel();
+    }
+
+    // 显示食谱详情
+    function showFoodRecipe(recipeNum) {
+        isRecipeOpen = true;
+        stopFoodCarousel();
+
+        // 根据recipeNum设置不同的食谱内容
+        let title, materials, method;
+
+        switch (recipeNum) {
+            case 1:
+                title = "枸杞明目茶配方";
+                materials = "材料：枸杞10克，菊花5克，冰糖适量。";
+                method = "做法：将枸杞和菊花放入茶壶中，加入适量开水，浸泡5-10分钟，加入冰糖调味即可。";
+                break;
+            case 2:
+                title = "山药养胃粥配方";
+                materials = "材料：山药100克，粳米50克，冰糖适量。";
+                method = "做法：将山药去皮切片，与粳米一同放入锅中，加入适量清水，大火煮开后转小火煮30分钟，加入冰糖调味即可。";
+                break;
+            case 3:
+                title = "红枣补血汤配方";
+                materials = "材料：红枣10颗，桂圆10克，枸杞10克，冰糖适量。";
+                method = "做法：将红枣、桂圆、枸杞放入锅中，加入适量清水，大火煮开后转小火煮20分钟，加入冰糖调味即可。";
+                break;
+            case 4:
+                title = "薏米祛湿饮配方";
+                materials = "材料：薏米30克，赤小豆30克，冰糖适量。";
+                method = "做法：将薏米和赤小豆洗净，放入锅中，加入适量清水，大火煮开后转小火煮40分钟，加入冰糖调味即可。";
+                break;
+            case 5:
+                title = "银耳润肺羹配方";
+                materials = "材料：银耳10克，百合10克，莲子10克，冰糖适量。";
+                method = "做法：将银耳提前泡发，撕成小块，与百合、莲子一同放入锅中，加入适量清水，大火煮开后转小火炖煮1小时，加入冰糖调味即可。";
+                break;
+            default:
+                title = "食谱";
+                materials = "材料：";
+                method = "做法：";
+        }
+
+        document.getElementById('food-recipe-title').textContent = title;
+        document.getElementById('food-recipe-materials').textContent = materials;
+        document.getElementById('food-recipe-method').textContent = method;
+
+        foodRecipeOverlay.style.display = 'flex';
+    }
+
+    // 关闭食谱详情
+    function closeFoodRecipe() {
+        isRecipeOpen = false;
+        foodRecipeOverlay.style.display = 'none';
+        startFoodCarousel();
+    }
+
+    // 窗口大小改变时重新计算轮播位置
+    window.addEventListener('resize', updateFoodCarousel);
+
+    // 初始化食疗卡片轮播
+    document.addEventListener('DOMContentLoaded', initFoodCarousel);
+
+    // 退出按钮事件
+    document.getElementById('logout-btn').addEventListener('click', function (e) {
+        e.preventDefault();
+        localStorage.removeItem('username');
+        window.location.href = '/logout';
+    });
+
+    // 反馈功能实现
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.querySelector('.feedback-modal');
+        const feedbackBtn = document.querySelector('.feedback-toggle');
+        const closeBtn = document.querySelector('.close-modal');
+
+        // 打开模态框
+        feedbackBtn.addEventListener('click', () => {
+            modal.style.display = 'block';
+        });
+
+        // 关闭模态框
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        // 点击外部关闭
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // 表单提交处理
+        document.getElementById('feedbackForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = localStorage.getItem('username') || '匿名用户';
+            const contact = document.getElementById('contact').value;
+            const content = document.getElementById('content').value;
+            const feedback_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+            try {
+                const response = await fetch('/submit_feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username,
+                        contact,
+                        content,
+                        feedback_time
+                    })
+                });
+
+                if (response.ok) {
+                    alert('反馈提交成功！');
+                    modal.style.display = 'none';
+                    document.getElementById('feedbackForm').reset();
+                } else {
+                    throw new Error('提交失败');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('反馈提交失败，请稍后重试');
+            }
+        });
+    });
+
+    // 产品卡片点击事件
+    document.querySelectorAll('.product-card').forEach(card => {
+        const overlay = card.querySelector('.product-detail-overlay');
+        const closeBtn = card.querySelector('.product-detail-close');
+
+        // 点击卡片显示详情
+        card.addEventListener('click', function (e) {
+            // 防止事件冒泡
+            if (e.target === closeBtn || e.target === overlay) return;
+
+            overlay.style.display = 'block';
+            // 禁用卡片悬停效果
+            card.style.transform = 'none';
+            card.style.boxShadow = 'none';
+        });
+
+        // 点击关闭按钮隐藏详情
+        closeBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            overlay.style.display = 'none';
+        });
+
+        // 点击详情区域外部隐藏详情
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) {
+                overlay.style.display = 'none';
+            }
+        });
+    });
+
+
+    // 产品卡片悬停效果增强
+    document.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('mouseenter', function () {
+            this.style.transform = 'translateY(-8px)';
+            this.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
+        });
+
+        card.addEventListener('mouseleave', function () {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 3px 10px rgba(0,0,0,0.1)';
+        });
+    });
+    // 中医六艺卡片交互逻辑 - 修改版
+    document.addEventListener('DOMContentLoaded', function () {
+        const artCards = document.querySelectorAll('.tcm-art-card');
+
+        // 点击卡片放大效果
+        artCards.forEach(card => {
+            card.addEventListener('click', function () {
+                // 如果已经是放大状态，则恢复原状
+                if (this.classList.contains('expanded')) {
+                    this.classList.remove('expanded');
+                } else {
+                    // 先取消所有卡片的放大状态
+                    artCards.forEach(c => c.classList.remove('expanded'));
+                    // 然后放大当前卡片
+                    this.classList.add('expanded');
+                }
+            });
+        });
+
+        // 点击页面其他区域恢复卡片堆叠状态
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.tcm-art-card')) {
+                artCards.forEach(card => card.classList.remove('expanded'));
+            }
+        });
+    });
+
+    </script>
+</body>
+</html> 

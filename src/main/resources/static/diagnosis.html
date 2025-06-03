@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh" data-theme="system">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能中医问诊 - 中药材识别系统</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap"
+          rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: url("/static/UI/bg_wz.png") no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        /* 共用样式保持与主站一致 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ma Shan Zheng', cursive;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        :root {
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --nav-bg: rgba(46, 139, 87, 0.9);
+            --nav-text: white;
+            --content-bg: rgba(255, 255, 255, 0.85);
+            --content-text: #333;
+            --chat-bg: #f0f8f0;
+            --ai-bubble: #e3f2e3;
+            --user-bubble: #d1e8d1;
+        }
+
+        html[data-theme="dark"] {
+            --bg-color: #222;
+            --text-color: #eee;
+            --nav-bg: rgba(20, 80, 50, 0.9);
+            --nav-text: #eee;
+            --content-bg: rgba(0, 0, 0, 0.7);
+            --content-text: #eee;
+            --chat-bg: #1a2a1a;
+            --ai-bubble: #2d3e2d;
+            --user-bubble: #3d4e3d;
+        }
+
+        /* 聊天界面样式 */
+        .chat-container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: var(--content-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-messages {
+            height: 500px;
+            overflow-y: auto;
+            padding: 15px;
+            background: var(--chat-bg);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+
+        .bubble {
+            /*max-width: 80%;*/
+            width: auto;
+            display: inline-block;
+            max-width: 100%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            line-height: 1.5;
+        }
+
+        .ai-bubble {
+            background: var(--ai-bubble);
+            border-top-left-radius: 4px;
+        }
+
+        .user-bubble {
+            background: var(--user-bubble);
+            border-top-right-radius: 4px;
+        }
+
+        .message-sender {
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 16px;
+            background: var(--content-bg);
+            color: var(--text-color);
+        }
+
+        #send-button {
+            padding: 12px 20px;
+            background-color: #2e8b57;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        #send-button:hover {
+            background-color: #3cb371;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 15px;
+            background: var(--ai-bubble);
+            border-radius: 18px;
+            margin-bottom: 15px;
+            width: fit-content;
+        }
+
+        .typing-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #666;
+            margin: 0 2px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #8b4513;
+            padding: 8px 20px;
+            border-radius: 20px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .home-btn:hover {
+            background: #8b4513;
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .message-user {
+            text-align: end;
+        }
+
+        .message-user .bubble {
+            margin-left: auto;
+        }
+    </style>
+</head>
+<body>
+
+
+<!-- 聊天主界面 -->
+<div class="chat-container">
+    <div class="chat-header">
+        <h1>智能中医问诊</h1>
+        <a href="/" class="home-btn text-decoration-none text-dark">
+            <i class="bi bi-house-door"></i> 返回首页
+        </a>
+        <link rel="stylesheet"
+              href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.9.1/font/bootstrap-icons.min.css">
+
+        <p>与AI中医小岐交流您的健康问题</p>
+    </div>
+
+
+    <div class="chat-messages">
+        <div id="chat-messages"></div>
+        <div class="typing-indicator" id="typing-indicator">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+        </div>
+    </div>
+
+    <div class="chat-input-area">
+        <input type="text" id="user-input" placeholder="请输入您的症状或问题..." autocomplete="off">
+        <button id="send-button">发送</button>
+    </div>
+</div>
+
+<script>
+    // 初始化聊天
+    document.addEventListener('DOMContentLoaded', function () {
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        // 显示AI欢迎消息
+        setTimeout(() => {
+            addAIMessage("您好，我是您的智能中医助手小岐。我是一名资深中医AI，专注于中医药学领域。请问有什么健康问题可以帮您解答？");
+        }, 500);
+
+        // 发送消息函数
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message === '') return;
+
+            // 添加用户消息
+            addUserMessage(message);
+            userInput.value = '';
+
+            // 显示"正在输入"指示器
+            showTypingIndicator();
+
+            // 调用DeepSeek API
+            callDeepSeekAPI(message);
+        }
+
+        // 点击发送按钮
+        sendButton.addEventListener('click', sendMessage);
+
+        // 按Enter键发送
+        userInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // 添加AI消息
+        function addAIMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message message-ai';
+            messageDiv.innerHTML = `
+                    <div class="message-sender">AI中医小岐</div>
+                    <div class="bubble ai-bubble">${text}</div>
+                `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 添加用户消息
+        function addUserMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message message-user';
+            messageDiv.innerHTML = `
+                    <div class="message-sender">您</div>
+                    <div class="bubble user-bubble">${text}</div>
+                `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 显示"正在输入"指示器
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 隐藏"正在输入"指示器
+        function hideTypingIndicator() {
+            typingIndicator.style.display = 'none';
+        }
+
+        // 调用DeepSeek API
+        async function callDeepSeekAPI(userMessage) {
+            try {
+                // 系统提示，限制AI回答范围和格式
+                const systemPrompt = `
+            你是一位资深中医AI"小岐"，请严格遵循以下要求：
+            1. 专业范围：仅回答中医诊断、中药、针灸、养生相关问题
+            2. 回答结构：
+                【症状分析】从中医理论分析症状原因
+                【辨证分型】列出可能的证型(如肝郁气滞等)
+                【调理原则】给出治疗原则(如疏肝理气等)
+                【推荐方案】
+                    - 中药方剂(注明经典出处)
+                    - 食疗建议
+                    - 穴位按摩
+                【注意事项】提醒禁忌和日常调养
+            3. 语言要求：专业但通俗，引用经典必须注明出处
+            4. 非中医问题回复："抱歉，作为中医助手，我无法回答这个问题"
+            5. 非疾病相关问题可以不按照这个模版来回答
+            `;
+
+                fetch("/chat", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        content: userMessage,
+                        system_prompt: systemPrompt  // 添加系统提示
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        hideTypingIndicator();
+                        if (data.success) {
+                            addAIMessage(data.message);
+                        } else {
+                            addAIMessage("抱歉，处理您的请求时出现了问题。");
+                        }
+                    })
+                    .catch(error => {
+                        hideTypingIndicator();
+                        addAIMessage("网络请求失败，请检查连接后重试");
+                        console.error("API调用错误:", error);
+                    });
+
+            } catch (error) {
+                hideTypingIndicator();
+                addAIMessage("抱歉，暂时无法处理您的请求。请稍后再试。");
+                console.error("API调用错误:", error);
+            }
+        }
+    });
+
+</script>
+</body>
+</html>

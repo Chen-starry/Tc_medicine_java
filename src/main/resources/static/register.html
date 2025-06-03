@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap"
+          rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <title>注册 - 杏林析微</title>
+    <style>
+        /* 复用登录页面的样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+
+        body {
+            background: url("/static/UI/bg_lr.png") no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .register-container {
+            background-color: rgba(193, 255, 193, 0);
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 17px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 15px;
+            transition: border 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #4a90e2;
+            outline: none;
+        }
+
+        .verification-group {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+            height: 48px;
+        }
+
+        .verification-group input {
+            flex: 1;
+            height: 100%;
+            box-sizing: border-box;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .verification-group input:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 8px rgba(74, 144, 226, 0.2);
+            outline: none;
+        }
+
+        .btn-send-code {
+            height: 100%;
+            padding: 0 24px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 130px;
+            box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+        }
+
+        .btn-send-code:hover:not(:disabled) {
+            background: linear-gradient(135deg, #218838, #1ea080);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-send-code:disabled {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2);
+        }
+
+        .btn-send-code:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+        }
+
+        /* 添加验证码输入框图标样式 */
+        .verification-input-wrapper {
+            position: relative;
+            flex: 1;
+            height: 100%;
+        }
+
+        .verification-input-wrapper input {
+            padding-left: 15px;
+            width: 110%;
+            height: 100%;
+        }
+
+        /* 按钮加载动画 */
+        .btn-send-code.loading {
+            position: relative;
+            color: transparent;
+        }
+        .btn-send-code{
+            max-width:10px;
+        }
+        .btn-send-code.loading::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin: -8px 0 0 -8px;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 震动动画 */
+        @keyframes shake {
+            0%, 20%, 40%, 60%, 80%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 480px) {
+            .verification-group {
+                flex-direction: column;
+                gap: 10px;
+                height: auto;
+            }
+            
+            .verification-input-wrapper,
+            .btn-send-code {
+                height: 48px;
+            }
+            
+            .btn-send-code {
+                min-width: 100%;
+                margin-left: 0; /* 移动端取消左边距 */
+            }
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-register:hover {
+            background-color: #357abd;
+        }
+
+        .error-message, .success-message {
+            margin-top: 15px;
+            font-size: 14px;
+            height: 20px;
+        }
+
+        .error-message {
+            color: #e74c3c;
+        }
+
+        .success-message {
+            color: #28a745;
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #8b4513;
+            padding: 8px 20px;
+            border-radius: 20px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .home-btn:hover {
+            background: #8b4513;
+            color: white !important;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+<a href="/" class="home-btn text-decoration-none text-dark">
+    <i class="bi bi-house-door"></i> 返回首页
+</a>
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.9.1/font/bootstrap-icons.min.css">
+
+<div class="register-container">
+    <h2>杏林析微 - 用户注册</h2>
+    <form id="register-form">
+        <div class="input-group">
+            <label for="username">用户名</label>
+            <input type="text" id="username" placeholder="请输入用户名" required>
+        </div>
+
+        <div class="input-group">
+            <label for="email">邮箱地址</label>
+            <input type="email" id="email" placeholder="请输入邮箱地址" required>
+        </div>
+
+        <div class="input-group">
+            <label for="verification-code">邮箱验证码</label>
+            <div class="verification-group">
+                <div class="verification-input-wrapper">
+                    <input type="text" id="verification-code" placeholder="请输入6位验证码" required maxlength="6">
+                </div>
+                <button type="button" id="send-code-btn" class="btn-send-code">
+                    <span id="btn-text">发送验证码</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="password">密码</label>
+            <input type="password" id="password" placeholder="请输入密码(至少6位)" required minlength="6">
+        </div>
+
+        <div class="input-group">
+            <label for="confirm-password">确认密码</label>
+            <input type="password" id="confirm-password" placeholder="请再次输入密码" required minlength="6">
+        </div>
+
+        <button type="submit" class="btn-register">注册</button>
+        <p id="error-message" class="error-message"></p>
+        <p id="success-message" class="success-message"></p>
+    </form>
+</div>
+
+<script>
+    let countdownTimer = null;
+
+    // 发送验证码功能
+    document.getElementById("send-code-btn").addEventListener("click", function() {
+        const email = document.getElementById("email").value;
+        const sendButton = this;
+        const btnText = document.getElementById("btn-text");
+        const errorElement = document.getElementById("error-message");
+        const successElement = document.getElementById("success-message");
+
+        // 清空消息
+        errorElement.innerText = "";
+        successElement.innerText = "";
+
+        // 邮箱格式验证
+        if (!email || !isValidEmail(email)) {
+            errorElement.innerText = "请输入正确的邮箱地址";
+            // 添加输入框震动效果
+            const emailInput = document.getElementById("email");
+            emailInput.style.animation = "shake 0.5s ease-in-out";
+            setTimeout(() => emailInput.style.animation = "", 500);
+            return;
+        }
+
+        // 添加加载效果
+        sendButton.disabled = true;
+        sendButton.classList.add("loading");
+        btnText.innerText = "发送中...";
+
+        // 发送验证码请求
+        fetch("/api/auth/send-verification-code", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: "email=" + encodeURIComponent(email)
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 移除加载效果
+            sendButton.classList.remove("loading");
+            
+            if (data.success) {
+                successElement.innerText = "验证码已发送到您的邮箱，请查收";
+                startCountdown(sendButton);
+            } else {
+                errorElement.innerText = data.message || "验证码发送失败";
+                sendButton.disabled = false;
+                btnText.innerText = "发送验证码";
+            }
+        })
+        .catch(error => {
+            console.error('Send code error:', error);
+            sendButton.classList.remove("loading");
+            errorElement.innerText = "请求失败，请重试";
+            sendButton.disabled = false;
+            btnText.innerText = "发送验证码";
+        });
+    });
+
+    // 注册表单提交
+    document.getElementById("register-form").addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const username = document.getElementById("username").value;
+        const email = document.getElementById("email").value;
+        const verificationCode = document.getElementById("verification-code").value;
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirm-password").value;
+        const errorElement = document.getElementById("error-message");
+        const successElement = document.getElementById("success-message");
+
+        // 清空消息
+        errorElement.innerText = "";
+        successElement.innerText = "";
+
+        // 前端验证
+        if (!username.trim()) {
+            errorElement.innerText = "用户名不能为空";
+            return;
+        }
+
+        if (!isValidEmail(email)) {
+            errorElement.innerText = "请输入正确的邮箱地址";
+            return;
+        }
+
+        if (!verificationCode.trim()) {
+            errorElement.innerText = "请输入邮箱验证码";
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            errorElement.innerText = "两次输入的密码不一致";
+            return;
+        }
+
+        if (password.length < 6) {
+            errorElement.innerText = "密码长度不能少于6位";
+            return;
+        }
+
+        // 提交注册数据
+        fetch("/api/auth/register", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                userName: username,
+                email: email,
+                verificationCode: verificationCode,
+                password: password
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                successElement.innerText = "注册成功！3秒后跳转到登录页面...";
+                setTimeout(() => {
+                    window.location.href = "/login.html";
+                }, 3000);
+            } else {
+                errorElement.innerText = data.message || "注册失败";
+            }
+        })
+        .catch(error => {
+            console.error('Register error:', error);
+            errorElement.innerText = "请求失败，请重试";
+        });
+    });
+
+    // 邮箱格式验证
+    function isValidEmail(email) {
+        const emailRegex = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+        return emailRegex.test(email);
+    }
+
+    // 倒计时功能
+    function startCountdown(button) {
+        let seconds = 60;
+        const btnText = document.getElementById("btn-text");
+        
+        const countdown = () => {
+            if (seconds > 0) {
+                btnText.innerText = `${seconds}秒后重发`;
+                seconds--;
+                countdownTimer = setTimeout(countdown, 1000);
+            } else {
+                button.disabled = false;
+                button.classList.remove("loading");
+                btnText.innerText = "重新发送";
+                countdownTimer = null;
+            }
+        };
+        
+        countdown();
+    }
+
+    // 验证码输入框只允许数字
+    document.getElementById("verification-code").addEventListener("input", function(e) {
+        // 只保留数字
+        this.value = this.value.replace(/[^0-9]/g, '');
+        
+        // 限制最大长度为6位
+        if (this.value.length > 6) {
+            this.value = this.value.slice(0, 6);
+        }
+        
+        // 如果输入满6位，自动聚焦到下一个输入框
+        if (this.value.length === 6) {
+            document.getElementById("password").focus();
+        }
+    });
+
+    // 验证码输入框粘贴处理
+    document.getElementById("verification-code").addEventListener("paste", function(e) {
+        e.preventDefault();
+        const paste = (e.clipboardData || window.clipboardData).getData('text');
+        const numbers = paste.replace(/[^0-9]/g, '').slice(0, 6);
+        this.value = numbers;
+        
+        if (numbers.length === 6) {
+            document.getElementById("password").focus();
+        }
+    });
+
+    // 页面卸载时清理定时器
+    window.addEventListener("beforeunload", function() {
+        if (countdownTimer) {
+            clearTimeout(countdownTimer);
+        }
+    });
+</script>
+</body>
+</html>

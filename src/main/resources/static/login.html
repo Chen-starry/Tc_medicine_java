@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap"
+          rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <title>登录 - 中药材识别</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+
+        body {
+            background: url("/static/UI/bg_lr.png") no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .login-container {
+            background-color: rgba(193, 255, 193, 0);
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 17px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 15px;
+            transition: border 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #4a90e2;
+            outline: none;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+        }
+
+        .btn-login {
+            background-color: #4a90e2;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .btn-login:hover {
+            background-color: #357abd;
+        }
+
+        .btn-register {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-register:hover {
+            background-color: #e0e0e0;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin-top: 15px;
+            font-size: 14px;
+            height: 20px;
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #8b4513;
+            padding: 8px 20px;
+            border-radius: 20px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .home-btn:hover {
+            background: #8b4513;
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+    </style>
+</head>
+<body>
+<a href="/" class="home-btn text-decoration-none text-dark">
+    <i class="bi bi-house-door"></i> 返回首页
+</a>
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.9.1/font/bootstrap-icons.min.css">
+
+<div class="login-container">
+
+
+    <h2>中药材识别系统登录</h2>
+
+    <form id="login-form">
+        <div class="input-group">
+            <label for="username">账号</label>
+            <input type="text" id="username" placeholder="请输入用户名">
+        </div>
+
+        <div class="input-group">
+            <label for="password">密码</label>
+            <input type="password" id="password" placeholder="请输入密码">
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn btn-login">登录</button>
+            <a href="/register" class="btn btn-register">注册</a>
+        </div>
+
+        <p id="error-message" class="error-message"></p>
+    </form>
+</div>
+
+<script>
+    document.getElementById("login-form").addEventListener("submit", function (event) {
+        event.preventDefault();
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        // 简单验证
+        if (!username || !password) {
+            document.getElementById("error-message").innerText = "请输入用户名和密码";
+            return;
+        }
+
+        // 修改login.html中的fetch请求处理部分
+        fetch("/api/auth/login", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        }).then(res => res.json()).then(data => {
+            if (data.success) {
+                // 存储token和用户信息
+                localStorage.setItem('token', data.data.token);
+                localStorage.setItem('username', data.data.user.userName);
+                localStorage.setItem('userType', data.data.user.userType);
+                window.location.href = "/";
+            } else {
+                document.getElementById("error-message").innerText = data.message;
+            }
+        }).catch(error => {
+            console.error('Login error:', error);
+            document.getElementById("error-message").innerText = "登录请求失败";
+        });
+    });
+</script>
+</body>
+</html>
